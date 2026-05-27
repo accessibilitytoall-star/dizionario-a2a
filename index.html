@@ -1,0 +1,2205 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📖 Dizionario — AccessibilityToAll SRL</title>
+  <style>
+    :root {
+      --blu: #1565C0;
+      --arancione: #FF5200;
+      --nero: #1A1A1A;
+      --bianco: #FFFFFF;
+      --bg: #F0F2F5;
+      --border: #E5E7EB;
+      --grigio-testo: #6B7280;
+      --accent: #EBF2FB;
+    }
+    html { scroll-behavior: smooth; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; background: var(--bg); color: var(--nero); }
+
+    /* ── HEADER ── */
+    header { background: linear-gradient(to right, #1565C0 0%, #FF5200 100%); padding: 0 32px; display: flex; flex-direction: column; }
+    .header-top { display: flex; align-items: center; gap: 16px; padding: 20px 0 14px; }
+    .header-logo { width: 54px; height: 54px; border-radius: 12px; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.25); padding: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .header-logo svg { width: 100%; height: 100%; display: block; }
+    .header-title { font-size: 1.25rem; font-weight: 700; color: var(--nero); }
+    .header-sub { font-size: 0.8rem; opacity: 0.7; margin-top: 2px; color: var(--nero); }
+    .header-count { font-size: 0.72rem; font-weight: 700; margin-top: 4px; color: var(--nero); opacity: 0.6; }
+    .header-date { flex: 1; text-align: right; font-size: clamp(2.4rem, 6vw, 5rem); font-weight: 800; color: var(--nero); line-height: 1; letter-spacing: -0.02em; }
+
+    /* ── SEARCH BAR ── */
+    .search-bar { padding: 14px 0 16px; border-top: 1px solid rgba(0,0,0,0.12); }
+    .search-row { display: flex; align-items: center; gap: 10px; }
+    .search-wrap { flex: 1; position: relative; max-width: 460px; }
+    .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1rem; pointer-events: none; }
+    #searchInput {
+      width: 100%; padding: 10px 14px 10px 40px;
+      border-radius: 24px; border: 2px solid rgba(0,0,0,0.18);
+      background: rgba(255,255,255,0.92); font-size: 0.95rem;
+      color: var(--nero); outline: none; font-family: inherit;
+    }
+    #searchInput:focus { border-color: var(--bianco); background: white; }
+    #searchInput::placeholder { color: #6B7280; }
+    .bar-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .bar-btn {
+      padding: 7px 13px; border-radius: 20px;
+      border: 2px solid rgba(0,0,0,0.18);
+      background: rgba(255,255,255,0.85); color: var(--nero);
+      font-size: 0.76rem; font-weight: 700; cursor: pointer;
+      font-family: inherit; white-space: nowrap; transition: all 0.15s;
+    }
+    .bar-btn:hover { background: white; }
+    .bar-btn.active { background: var(--nero); color: white; border-color: transparent; }
+
+    /* ── MAIN ── */
+    main { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
+
+    /* ── LETTER PILLS NAV ── */
+    .letter-nav { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 28px; }
+    .letter-pill {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; font-weight: 800;
+      background: white; border: 2px solid var(--border);
+      color: var(--grigio-testo); text-decoration: none;
+      transition: all 0.15s; cursor: default;
+    }
+    .letter-pill.active { background: var(--blu); border-color: var(--blu); color: white; cursor: pointer; }
+    .letter-pill.active:hover { background: var(--arancione); border-color: var(--arancione); }
+
+    /* ── LETTER SECTION ── */
+    .letter-section { margin-bottom: 8px; }
+    .letter-toggle {
+      width: 100%; display: flex; align-items: center; gap: 12px;
+      background: white; border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px 20px; cursor: pointer; text-align: left;
+      font-family: inherit; color: var(--nero); transition: background 0.15s; margin-bottom: 4px;
+    }
+    .letter-toggle:hover { background: var(--accent); }
+    .letter-toggle[aria-expanded="true"] { border-radius: 12px 12px 0 0; border-bottom-color: transparent; background: var(--accent); }
+    .toggle-letter { font-size: 1.6rem; font-weight: 900; color: var(--blu); width: 36px; flex-shrink: 0; }
+    .toggle-count { font-size: 0.78rem; color: var(--grigio-testo); margin-left: auto; background: var(--bg); padding: 2px 10px; border-radius: 20px; }
+    .toggle-arrow { font-size: 0.8rem; color: var(--grigio-testo); transition: transform 0.2s; }
+    .letter-toggle[aria-expanded="true"] .toggle-arrow { transform: rotate(180deg); }
+    .letter-content { border: 1px solid var(--border); border-top: none; border-radius: 0 0 12px 12px; overflow: hidden; display: none; }
+    .letter-content.open { display: block; }
+
+    /* ── TERM CARD ── */
+    .term-card { padding: 20px 24px; border-bottom: 1px solid var(--border); background: white; }
+    .term-card:last-child { border-bottom: none; }
+    .term-card.hidden { display: none; }
+    .term-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+    .term-sigla { font-size: 1.2rem; font-weight: 900; color: var(--blu); }
+    .term-esteso { font-size: 0.88rem; font-weight: 600; color: var(--grigio-testo); }
+    .term-section-label { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; color: var(--grigio-testo); margin-bottom: 4px; margin-top: 12px; }
+    .term-text { font-size: 0.88rem; line-height: 1.6; }
+    .term-link { color: var(--blu); font-weight: 600; text-decoration: underline; text-decoration-color: rgba(21,101,192,0.3); }
+    .term-link:hover { text-decoration-color: var(--blu); }
+
+    /* ── FRASI ── */
+    .frasi-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+    .frasi-list li { font-size: 0.85rem; line-height: 1.6; padding: 8px 12px; background: var(--bg); border-radius: 8px; border-left: 3px solid var(--arancione); }
+    .frasi-list li.beatrice { border-left-color: var(--arancione); }
+    .frasi-list li.neutrale { border-left-color: var(--blu); }
+    .frase-tag { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.5; margin-right: 5px; }
+
+    /* ── COME SI SCRIVE ── */
+    .scrittura-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 4px; font-size: 0.85rem; }
+    .scrittura-sbagliato { color: #DC2626; text-decoration: line-through; font-weight: 600; }
+    .scrittura-ok { color: #16A34A; font-weight: 700; }
+    .scrittura-sep { color: var(--grigio-testo); font-size: 0.78rem; }
+
+    /* ── BADGE EAA ── */
+    .eaa-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; background: #FF5200; color: #1A1A1A; padding: 3px 10px; border-radius: 12px; margin-top: 12px; margin-bottom: 4px; }
+
+    /* ── CORRELATI ── */
+    .correlati-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .correlato { font-size: 0.8rem; padding: 4px 12px; background: var(--accent); border-radius: 16px; text-decoration: none; color: var(--blu); font-weight: 600; border: 1px solid rgba(21,101,192,0.3); transition: all 0.15s; }
+    .correlato:hover { background: var(--blu); color: white; }
+    .correlato-pending { font-size: 0.8rem; padding: 4px 12px; background: var(--bg); border-radius: 16px; color: var(--grigio-testo); font-weight: 600; border: 1px dashed var(--border); cursor: default; font-style: italic; }
+
+    /* ── CONNESSIONI ── */
+    .connessioni-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 8px; margin-top: 6px; }
+    .conn-item { background: var(--bg); border-radius: 8px; padding: 8px 10px; }
+    .conn-label { display: block; font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--arancione); margin-bottom: 3px; }
+    .conn-val { font-size: 0.82rem; line-height: 1.4; color: var(--nero); }
+
+    /* ── VISTA CLIENTE ── */
+    body.vista-cliente .interno-only { display: none !important; }
+
+    /* ── QUIZ MODE ── */
+    body.quiz-mode .term-quiz-content { display: none !important; }
+    body.quiz-mode .quiz-reveal-btn { display: flex !important; }
+    body.quiz-mode .quiz-revealed .term-quiz-content { display: block !important; }
+    body.quiz-mode .quiz-revealed .quiz-reveal-btn { display: none !important; }
+    .quiz-reveal-btn {
+      display: none; width: 100%; margin-top: 10px; padding: 10px 16px;
+      background: var(--accent); border: 1px dashed var(--blu); border-radius: 8px;
+      cursor: pointer; font-size: 0.84rem; font-weight: 700; color: var(--blu);
+      font-family: inherit; justify-content: center; align-items: center; gap: 6px;
+      transition: background 0.15s;
+    }
+    .quiz-reveal-btn:hover { background: #d0e8fb; }
+
+    /* ── PULSANTE STAMPA ── */
+    .print-btn {
+      display: inline-flex; align-items: center; gap: 5px; margin-top: 14px;
+      padding: 6px 14px; background: white; border: 1px solid var(--border);
+      border-radius: 20px; font-size: 0.78rem; font-weight: 600;
+      color: var(--grigio-testo); cursor: pointer; font-family: inherit; transition: all 0.15s;
+    }
+    .print-btn:hover { background: var(--bg); border-color: var(--blu); color: var(--blu); }
+
+    /* ── NO RESULTS ── */
+    #noResults { display: none; text-align: center; padding: 48px 24px; color: var(--grigio-testo); font-size: 0.95rem; }
+
+    /* ── FOOTER ── */
+    footer { text-align: center; padding: 24px; font-size: 0.75rem; color: var(--grigio-testo); border-top: 1px solid var(--border); margin-top: 8px; }
+
+    @media (max-width: 640px) {
+      header { padding: 0 16px; }
+      main { padding: 20px 12px; }
+      .bar-actions { display: none; }
+      .connessioni-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* ── AGGIUNGI TERMINE MODAL ── */
+    #add-term-overlay {
+      display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);
+      z-index:9998;align-items:center;justify-content:center;padding:20px;
+    }
+    #add-term-overlay.open { display:flex; }
+    .add-term-modal {
+      background:white;border-radius:20px;padding:28px;width:100%;max-width:560px;
+      max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.25);
+    }
+    .modal-title { font-size:1.1rem;font-weight:900;color:var(--blu);margin-bottom:20px; }
+    .modal-field { margin-bottom:14px; }
+    .modal-label { display:block;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--grigio-testo);margin-bottom:6px; }
+    .modal-input {
+      width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;
+      font-size:.9rem;font-family:inherit;color:var(--nero);background:var(--bg);outline:none;
+    }
+    .modal-input:focus { border-color:var(--blu);background:white; }
+    .modal-textarea { resize:vertical;min-height:80px;line-height:1.5; }
+    .modal-actions { display:flex;gap:10px;margin-top:20px; }
+    .modal-btn-primary {
+      flex:1;padding:11px 16px;border-radius:10px;border:none;
+      background:var(--blu);color:white;font-size:.88rem;font-weight:800;cursor:pointer;font-family:inherit;
+    }
+    .modal-btn-secondary {
+      padding:11px 16px;border-radius:10px;border:1.5px solid var(--border);
+      background:white;color:var(--grigio-testo);font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit;
+    }
+    .custom-badge {
+      display:inline-flex;align-items:center;gap:4px;font-size:.62rem;font-weight:800;
+      text-transform:uppercase;letter-spacing:.06em;background:#EDE9FE;color:#4C1D95;
+      padding:2px 8px;border-radius:8px;margin-left:8px;
+    }
+
+    /* ── FLASHCARD OVERLAY ── */
+    #fc-overlay {
+      display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);
+      z-index:9999;flex-direction:column;align-items:center;
+      justify-content:flex-start;padding:24px 16px;overflow-y:auto;
+    }
+    #fc-overlay.open { display:flex; }
+    .fc-header { display:flex;align-items:center;width:100%;max-width:640px;margin-bottom:12px; }
+    .fc-letters { display:flex;flex-wrap:wrap;gap:6px;width:100%;max-width:640px;margin-bottom:12px; }
+    .fc-letter-chip {
+      padding:4px 12px;border-radius:16px;border:1.5px solid rgba(255,255,255,.3);
+      background:rgba(255,255,255,.1);color:white;font-size:.72rem;font-weight:800;
+      cursor:pointer;font-family:inherit;transition:all .15s;
+    }
+    .fc-letter-chip.fc-active { background:white;color:var(--blu);border-color:white; }
+    .fc-card {
+      width:100%;max-width:640px;background:white;border-radius:20px;
+      padding:32px 28px;cursor:pointer;box-shadow:0 8px 40px rgba(0,0,0,.3);
+      min-height:220px;transition:transform .1s;
+    }
+    .fc-card:active { transform:scale(.99); }
+    .fc-nav { display:flex;gap:10px;margin-top:14px;width:100%;max-width:640px; }
+    .fc-btn {
+      flex:1;padding:10px 14px;border-radius:12px;border:2px solid rgba(255,255,255,.25);
+      background:rgba(255,255,255,.12);color:white;font-size:.82rem;font-weight:700;
+      cursor:pointer;font-family:inherit;transition:all .15s;
+    }
+    .fc-btn:hover { background:rgba(255,255,255,.22); }
+    .fc-btn.fc-reveal-btn { background:var(--arancione);border-color:var(--arancione);color:var(--nero); }
+
+    /* ── STAMPA TUTTO ── */
+    @media print {
+      header .search-bar, .bar-actions, .letter-nav,
+      .quiz-reveal-btn, .print-btn, footer,
+      a[href*="HUB"] { display:none!important; }
+      body  { background:white!important; }
+      main  { padding:0!important;max-width:100%!important; }
+      .letter-content  { display:block!important; }
+      .term-card       { display:block!important;page-break-inside:avoid; }
+      .term-card.hidden { display:block!important; }
+      .term-quiz-content { display:block!important; }
+      .interno-only    { display:block!important; }
+      .letter-toggle   { background:white!important;border-radius:0!important; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="header-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 115" aria-label="AccessibilityToAll logo">
+        <path d="M 22 62 L 22 34 Q 22 7 50 7 Q 78 7 78 34 L 78 50" fill="none" stroke="#1976D2" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="8" y="50" width="84" height="58" rx="13" ry="13" fill="#1976D2"/>
+        <circle cx="50" cy="73" r="12" fill="#FF5200"/>
+        <rect x="43.5" y="81" width="13" height="19" rx="5" fill="#FF5200"/>
+      </svg>
+    </div>
+    <div>
+      <div class="header-title">📖 Dizionario</div>
+      <div class="header-sub">AccessibilityToAll SRL — Beatrice Biasuzzi, CEO</div>
+      <div class="header-count" id="total-count"></div>
+    </div>
+    <div class="header-date" id="hdr-date" aria-label="Data aggiornamento"></div>
+  </div>
+  <div class="search-bar">
+    <div class="search-row">
+      <div class="search-wrap">
+        <span class="search-icon" aria-hidden="true">🔍</span>
+        <input type="search" id="searchInput" placeholder="Cerca un termine…" aria-label="Cerca termine nel dizionario">
+      </div>
+      <div class="bar-actions">
+        <button class="bar-btn" onclick="openAddTerm()" aria-label="Aggiungi termine personale">+ Aggiungi</button>
+        <button class="bar-btn" onclick="printAll()" aria-label="Stampa tutto il dizionario">🖨 Stampa tutto</button>
+        <button class="bar-btn" onclick="startFlashcard()" aria-label="Modalità flashcard">📇 Flashcard</button>
+        <button class="bar-btn" id="vistaToggle" onclick="toggleVista()" aria-pressed="false">👤 Vista cliente</button>
+        <button class="bar-btn" id="quizToggle" onclick="toggleQuiz()" aria-pressed="false">🧠 Quiz</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <nav class="letter-nav" aria-label="Naviga per lettera"></nav>
+  <div id="dizionario">
+
+    <!-- ===== A ===== -->
+    <div class="letter-section" data-letter="A" id="lettera-A">
+      <button class="letter-toggle" aria-expanded="true" aria-controls="content-A" onclick="toggleLetter('A', this)">
+        <span class="toggle-letter" aria-hidden="true">A</span>
+        <span>1 termine</span>
+        <span class="toggle-count" id="count-A">1</span>
+        <span class="toggle-arrow" aria-hidden="true">▼</span>
+      </button>
+      <div class="letter-content open" id="content-A">
+
+        <div class="term-card" id="term-api" data-term="api application programming interface comunicazione sistemi dati json http rest integrazione chatbot form pagamenti webhook" data-letter="A">
+          <div class="term-header">
+            <span class="term-sigla">API</span>
+            <span class="term-esteso">Application Programming Interface</span>
+          </div>
+          <button class="quiz-reveal-btn" onclick="revealCard('term-api')" aria-label="Rivela contenuto scheda API">▼ Rivela risposta</button>
+          <div class="term-quiz-content">
+
+            <div class="term-section-label">Significato</div>
+            <div class="term-text">Un insieme di regole e protocolli che permette a due sistemi digitali di comunicare tra loro e scambiarsi dati in modo standardizzato.</div>
+
+            <div class="term-section-label">Spiegazione semplice</div>
+            <div class="term-text">È come un cameriere al ristorante: prende la richiesta del cliente (il sito), la porta in cucina (il server), e riporta il risultato (i dati). Il cliente non entra mai in cucina — usa solo il cameriere.</div>
+
+            <div class="interno-only">
+              <div class="term-section-label">Contesto A2A — accessibilità e EAA</div>
+              <div class="term-text">Le API vengono usate nei form di contatto, sistemi di prenotazione, chatbot e widget integrati nei siti. Se queste integrazioni non sono accessibili, creano barriere — anche se il resto del sito è conforme WCAG.</div>
+            </div>
+
+            <div class="term-section-label">Chi usa questo termine</div>
+            <div class="term-text">Sviluppatori web, CTO, product manager, fornitori di servizi digitali (mappe, pagamenti, chatbot, newsletter).</div>
+
+            <div class="term-section-label">Quando viene usato</div>
+            <div class="term-text">Quando si integra un sistema esterno nel sito: Google Maps, pagamenti online, form di prenotazione, chatbot, social login, invio email automatico.</div>
+
+            <div class="term-section-label">Come si scrive</div>
+            <div class="scrittura-row">
+              <span class="scrittura-sbagliato">Api</span>
+              <span class="scrittura-sep">→ errore comune (solo iniziale maiuscola)</span>
+              <span class="scrittura-ok">API</span>
+              <span class="scrittura-sep">·</span>
+              <span style="font-size:0.82rem;color:var(--grigio-testo)">sempre tutto maiuscolo, è una sigla</span>
+            </div>
+
+            <div class="term-section-label">Pronuncia</div>
+            <div class="term-text">In italiano si legge lettera per lettera: <strong>A-P-I</strong>. In inglese la pronuncia è identica: <strong>eɪ-piː-aɪ</strong>. Non esiste una versione italiana del termine.</div>
+
+            <div class="term-section-label">5 frasi per memorizzarla</div>
+            <ul class="frasi-list">
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Quando integri un widget di prenotazione di terze parti, stai usando un'API — e quella API deve essere accessibile quanto il resto del sito."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Le API sono trasparenti per l'utente, ma non per chi fa l'audit: ogni integrazione esterna è un punto critico da verificare."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Un sito può essere perfetto nel codice proprio, ma se usa un'API che restituisce HTML non strutturato, l'accessibilità crolla nel punto di congiunzione."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Un'API definisce come due sistemi si parlano: quali dati inviare, in quale formato, e come interpretare la risposta."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Le API REST sono le più diffuse nel web moderno: comunicano tramite HTTP e restituiscono dati in formato JSON."</li>
+            </ul>
+
+            <div class="term-section-label">Termini correlati</div>
+            <div class="correlati-list">
+              <a href="#term-backend" class="correlato">Backend</a>
+              <a href="#term-frontend" class="correlato">Frontend</a>
+              <a href="#term-cms" class="correlato">CMS</a>
+            </div>
+
+            <div class="term-section-label">Connessioni</div>
+            <div class="connessioni-grid">
+              <div class="conn-item"><span class="conn-label">Chi</span><span class="conn-val">Sviluppatori, provider di servizi, titolari di siti con integrazioni esterne</span></div>
+              <div class="conn-item"><span class="conn-label">Cosa</span><span class="conn-val">Protocollo di comunicazione tra sistemi, dati strutturati (JSON, XML)</span></div>
+              <div class="conn-item"><span class="conn-label">Come</span><span class="conn-val">Richieste HTTP/HTTPS, chiave API, token di autenticazione</span></div>
+              <div class="conn-item"><span class="conn-label">Quando</span><span class="conn-val">Ogni volta che il sito chiede dati o funzionalità a un servizio esterno</span></div>
+              <div class="conn-item"><span class="conn-label">Dove</span><span class="conn-val">Tra server e server (backend) o tra browser e server (frontend)</span></div>
+              <div class="conn-item"><span class="conn-label">Perché</span><span class="conn-val">Integrare funzionalità esterne senza costruirle da zero (mappe, pagamenti, chatbot)</span></div>
+            </div>
+
+            <div class="eaa-badge">♿ Collegamento EAA</div>
+            <div class="term-text">Le API di terze parti integrate nel sito (widget, chatbot, pagamenti) fanno parte dell'esperienza utente e ricadono nell'obbligo EAA. Se un'API restituisce contenuto non accessibile, la responsabilità della conformità ricade comunque sul titolare del sito.</div>
+
+            <button class="print-btn" onclick="printCard('term-api')" aria-label="Stampa scheda API">🖨 Stampa scheda</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- /A -->
+
+    <!-- ===== B ===== -->
+    <div class="letter-section" data-letter="B" id="lettera-B">
+      <button class="letter-toggle" aria-expanded="true" aria-controls="content-B" onclick="toggleLetter('B', this)">
+        <span class="toggle-letter" aria-hidden="true">B</span>
+        <span>1 termine</span>
+        <span class="toggle-count" id="count-B">1</span>
+        <span class="toggle-arrow" aria-hidden="true">▼</span>
+      </button>
+      <div class="letter-content open" id="content-B">
+
+        <div class="term-card" id="term-backend" data-term="backend back-end bacend lato server server-side sviluppo web database html wcag accessibilità cms api" data-letter="B">
+          <div class="term-header">
+            <span class="term-sigla">backend</span>
+            <span class="term-esteso">lato server · back-end · server-side</span>
+          </div>
+          <button class="quiz-reveal-btn" onclick="revealCard('term-backend')" aria-label="Rivela contenuto scheda backend">▼ Rivela risposta</button>
+          <div class="term-quiz-content">
+
+            <div class="term-section-label">Significato</div>
+            <div class="term-text">La parte "dietro le quinte" di un sito o applicazione web — server, database e logica di funzionamento che l'utente non vede, ma che fa girare tutto. Si contrappone al <a href="#term-frontend" class="term-link">frontend</a>, la parte visibile.</div>
+
+            <div class="term-section-label">Spiegazione semplice</div>
+            <div class="term-text">È come la cucina di un ristorante: il cliente vede solo il piatto (il sito), ma dietro c'è tutta l'infrastruttura che prepara, conserva e serve i dati.</div>
+
+            <div class="interno-only">
+              <div class="term-section-label">Contesto A2A — accessibilità e EAA</div>
+              <div class="term-text">Nel lavoro di accessibilità, il backend genera il codice HTML delle pagine. Se produce codice mal strutturato — senza heading, senza attributo <code>lang</code>, senza <code>aria-label</code> — il sito fallisce i requisiti WCAG anche se graficamente sembra a posto.</div>
+            </div>
+
+            <div class="term-section-label">Chi usa questo termine</div>
+            <div class="term-text">Sviluppatori web, CTO, project manager digitali, consulenti IT, aziende con siti dinamici o e-commerce, chiunque lavori con CMS, API o database.</div>
+
+            <div class="term-section-label">Quando viene usato</div>
+            <div class="term-text">Quando si parla di sviluppo web, integrazione con <a href="#term-cms" class="term-link">CMS</a>, form di contatto, database, performance del sito o <a href="#term-api" class="term-link">API</a>.</div>
+
+            <div class="term-section-label">Come si scrive</div>
+            <div class="scrittura-row">
+              <span class="scrittura-sbagliato">bacend</span>
+              <span class="scrittura-sep">→ errore comune</span>
+              <span class="scrittura-ok">backend</span>
+              <span class="scrittura-sep">·</span>
+              <span style="font-size:0.82rem;color:var(--grigio-testo)">anche <strong>back-end</strong> (con trattino) è accettato</span>
+            </div>
+
+            <div class="term-section-label">Pronuncia</div>
+            <div class="term-text">In italiano si pronuncia quasi come in inglese: <strong>bèc-end</strong> (accento sulla prima sillaba). In inglese: <strong>bæk-end</strong>. Non esiste una traduzione italiana standard: <em>lato server</em> o <em>server-side</em> sono i sinonimi tecnici più diffusi.</div>
+
+            <div class="term-section-label">5 frasi per memorizzarla</div>
+            <ul class="frasi-list">
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Il backend del tuo sito genera le pagine: se nasce già inaccessibile, nessun restyling lo salverà."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Ho trovato spesso siti belli in facciata ma con un backend che buttava fuori codice HTML disorganizzato — e lì cascava l'audit."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Quando parlo con gli sviluppatori, la prima domanda è sempre: cosa gira nel backend?"</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Il backend gestisce tutte le operazioni che l'utente non vede: autenticazione, database, logica di calcolo."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Un backend ben strutturato produce HTML semantico — fondamentale per le tecnologie assistive come gli screen reader."</li>
+            </ul>
+
+            <div class="term-section-label">Termini correlati</div>
+            <div class="correlati-list">
+              <a href="#term-frontend" class="correlato">Frontend</a>
+              <a href="#term-api" class="correlato">API</a>
+              <a href="#term-cms" class="correlato">CMS</a>
+            </div>
+
+            <div class="term-section-label">Connessioni</div>
+            <div class="connessioni-grid">
+              <div class="conn-item"><span class="conn-label">Chi</span><span class="conn-val">Sviluppatori web, CTO, project manager, aziende con siti dinamici</span></div>
+              <div class="conn-item"><span class="conn-label">Cosa</span><span class="conn-val">Server, database, logica applicativa, codice HTML generato</span></div>
+              <div class="conn-item"><span class="conn-label">Come</span><span class="conn-val">Linguaggi server (PHP, Python, Node.js), framework, CMS</span></div>
+              <div class="conn-item"><span class="conn-label">Quando</span><span class="conn-val">Sviluppo, manutenzione, audit di accessibilità, ogni caricamento di pagina</span></div>
+              <div class="conn-item"><span class="conn-label">Dove</span><span class="conn-val">Server fisico o cloud — mai direttamente nel browser del visitatore</span></div>
+              <div class="conn-item"><span class="conn-label">Perché</span><span class="conn-val">Far funzionare il sito, gestire i dati degli utenti, produrre le pagine</span></div>
+            </div>
+
+            <div class="eaa-badge">♿ Collegamento EAA</div>
+            <div class="term-text">Il backend è responsabile di generare il codice HTML servito agli utenti. Se produce codice senza attributi di accessibilità, il sito fallisce i requisiti WCAG 2.1 AA — anche se il frontend sembra a posto. Nella conformità EAA, il backend è spesso il punto critico più trascurato.</div>
+
+            <button class="print-btn" onclick="printCard('term-backend')" aria-label="Stampa scheda backend">🖨 Stampa scheda</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- /B -->
+
+    <!-- ===== C ===== -->
+    <div class="letter-section" data-letter="C" id="lettera-C">
+      <button class="letter-toggle" aria-expanded="true" aria-controls="content-C" onclick="toggleLetter('C', this)">
+        <span class="toggle-letter" aria-hidden="true">C</span>
+        <span>2 termini</span>
+        <span class="toggle-count" id="count-C">2</span>
+        <span class="toggle-arrow" aria-hidden="true">▼</span>
+      </button>
+      <div class="letter-content open" id="content-C">
+
+        <div class="term-card" id="term-cms" data-term="cms content management system wordpress wix squarespace shopify gestione contenuti backend pagine articoli plugin" data-letter="C">
+          <div class="term-header">
+            <span class="term-sigla">CMS</span>
+            <span class="term-esteso">Content Management System</span>
+          </div>
+          <button class="quiz-reveal-btn" onclick="revealCard('term-cms')" aria-label="Rivela contenuto scheda CMS">▼ Rivela risposta</button>
+          <div class="term-quiz-content">
+
+            <div class="term-section-label">Significato</div>
+            <div class="term-text">Sistema software che permette di creare, gestire e pubblicare contenuti su un sito web senza scrivere codice manualmente.</div>
+
+            <div class="term-section-label">Spiegazione semplice</div>
+            <div class="term-text">È il "pannello di controllo" del sito: si aggiungono testi, immagini, pagine e articoli tramite un'interfaccia visiva, senza toccare il codice. WordPress, Wix, Squarespace, Shopify sono tutti CMS.</div>
+
+            <div class="interno-only">
+              <div class="term-section-label">Contesto A2A — accessibilità e EAA</div>
+              <div class="term-text">Il CMS determina quali funzionalità di accessibilità sono disponibili: se supporta heading gerarchici, testi alternativi per le immagini, campi ARIA. Un CMS accessibile facilita la conformità EAA; uno inadatto la sabota strutturalmente.</div>
+            </div>
+
+            <div class="term-section-label">Chi usa questo termine</div>
+            <div class="term-text">Marketing manager, content editor, SEO specialist, web designer, proprietari di siti che non sanno programmare.</div>
+
+            <div class="term-section-label">Quando viene usato</div>
+            <div class="term-text">Quando si parla di gestione dei contenuti del sito, aggiornamento di pagine, blog, e-commerce, o scelta della piattaforma per un nuovo sito.</div>
+
+            <div class="term-section-label">Come si scrive</div>
+            <div class="scrittura-row">
+              <span class="scrittura-sbagliato">cms</span>
+              <span class="scrittura-sep">→ errore comune (minuscolo)</span>
+              <span class="scrittura-ok">CMS</span>
+              <span class="scrittura-sep">·</span>
+              <span style="font-size:0.82rem;color:var(--grigio-testo)">sempre tutto maiuscolo, è una sigla</span>
+            </div>
+
+            <div class="term-section-label">Pronuncia</div>
+            <div class="term-text">In italiano si legge lettera per lettera: <strong>C-M-S</strong>. In inglese la pronuncia è identica: <strong>siː-ɛm-ɛs</strong>. Non esiste una traduzione italiana standard del termine.</div>
+
+            <div class="term-section-label">5 frasi per memorizzarla</div>
+            <ul class="frasi-list">
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Il CMS è dove si combatte davvero la battaglia dell'accessibilità quotidiana: se non supporta i testi alternativi, nessuno li inserirà."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Ho visto siti tecnicamente accessibili rovinati da un CMS che sovrascriveva heading e alt text ad ogni aggiornamento."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Scegliere il CMS giusto è già metà del lavoro di accessibilità — prima ancora di scrivere una riga di codice."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Un CMS permette a chi non conosce il codice di aggiornare il sito tramite un'interfaccia grafica — come un editor di testo avanzato."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"WordPress alimenta circa il 43% dei siti web mondiali ed è il CMS più diffuso, con migliaia di plugin tra cui diversi dedicati all'accessibilità."</li>
+            </ul>
+
+            <div class="term-section-label">Termini correlati</div>
+            <div class="correlati-list">
+              <a href="#term-backend" class="correlato">Backend</a>
+              <a href="#term-frontend" class="correlato">Frontend</a>
+              <a href="#term-api" class="correlato">API</a>
+            </div>
+
+            <div class="term-section-label">Connessioni</div>
+            <div class="connessioni-grid">
+              <div class="conn-item"><span class="conn-label">Chi</span><span class="conn-val">Content editor, marketing manager, SEO specialist, proprietario del sito</span></div>
+              <div class="conn-item"><span class="conn-label">Cosa</span><span class="conn-val">Interfaccia grafica per contenuti, database, template pagine</span></div>
+              <div class="conn-item"><span class="conn-label">Come</span><span class="conn-val">Pannello admin web, editor visivo drag-and-drop o a blocchi</span></div>
+              <div class="conn-item"><span class="conn-label">Quando</span><span class="conn-val">Ogni volta che si pubblica o aggiorna una pagina, articolo o prodotto</span></div>
+              <div class="conn-item"><span class="conn-label">Dove</span><span class="conn-val">Browser (pannello admin), server (dove i contenuti sono salvati)</span></div>
+              <div class="conn-item"><span class="conn-label">Perché</span><span class="conn-val">Permettere la gestione del sito senza conoscenze di codice</span></div>
+            </div>
+
+            <div class="eaa-badge">♿ Collegamento EAA</div>
+            <div class="term-text">La scelta del CMS è una decisione strategica per la conformità EAA. Un CMS che non permette di inserire testi alternativi, heading gerarchici o attributi ARIA rende strutturalmente impossibile la conformità — indipendentemente dall'impegno del team.</div>
+
+            <button class="print-btn" onclick="printCard('term-cms')" aria-label="Stampa scheda CMS">🖨 Stampa scheda</button>
+          </div>
+        </div>
+
+        <div class="term-card" id="term-cursor" data-term="cursor editor AI codice IDE intelligenza artificiale sviluppo vibecoding VS Code claude gpt copilot" data-letter="C">
+          <div class="term-header">
+            <span class="term-sigla">Cursor</span>
+            <span class="term-esteso">editor AI per sviluppatori</span>
+          </div>
+          <button class="quiz-reveal-btn" onclick="revealCard('term-cursor')" aria-label="Rivela contenuto scheda Cursor">▼ Rivela risposta</button>
+          <div class="term-quiz-content">
+
+            <div class="term-section-label">Significato</div>
+            <div class="term-text">Editor di codice basato su VS Code con un modello AI (Claude, GPT-4) integrato nativamente. Permette di scrivere, modificare e capire il codice attraverso conversazioni in linguaggio naturale direttamente nell'editor, senza uscire dall'ambiente di sviluppo.</div>
+
+            <div class="term-section-label">Spiegazione semplice</div>
+            <div class="term-text">È come Visual Studio Code, ma con un assistente AI già dentro: selezioni il codice, descrivi cosa vuoi cambiare ("rendi questo bottone accessibile con ARIA label"), e Cursor modifica direttamente il file. Non devi copiare e incollare tra il browser e l'editor.</div>
+
+            <div class="interno-only">
+              <div class="term-section-label">Contesto A2A — vibecoding professionale</div>
+              <div class="term-text">Cursor è uno dei tool principali del vibecoding professionale nel 2025, insieme a Claude Code. Beatrice usa Claude Code da terminale; chi preferisce un'interfaccia grafica più simile a un editor tradizionale sceglie Cursor. Entrambi usano Claude come modello AI sottostante.</div>
+            </div>
+
+            <div class="term-section-label">Chi usa questo termine</div>
+            <div class="term-text">Sviluppatori, vibecoder, designer che toccano il codice, fondatori che costruiscono i propri tool con AI — chiunque voglia un ambiente di sviluppo AI-first con interfaccia grafica.</div>
+
+            <div class="term-section-label">Quando viene usato</div>
+            <div class="term-text">Quando si parla di strumenti AI per la scrittura di codice, di vibecoding con interfaccia grafica, di alternative a Claude Code, o di ambienti di sviluppo di nuova generazione.</div>
+
+            <div class="term-section-label">Come si scrive</div>
+            <div class="scrittura-row">
+              <span class="scrittura-sbagliato">CURSOR</span>
+              <span class="scrittura-sep">→ tutto maiuscolo (è un nome proprio, non una sigla)</span>
+              <span class="scrittura-ok">Cursor</span>
+              <span class="scrittura-sep">·</span>
+              <span style="font-size:0.82rem;color:var(--grigio-testo)">prima lettera maiuscola, resto minuscolo</span>
+            </div>
+
+            <div class="term-section-label">Pronuncia</div>
+            <div class="term-text">In italiano: <strong>còr-sor</strong>. In inglese: <strong>ˈkɜːrsər</strong>. "Cursor" in inglese significa letteralmente "cursore" — il puntatore lampeggiante nell'editor.</div>
+
+            <div class="term-section-label">5 frasi per memorizzarla</div>
+            <ul class="frasi-list">
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Cursor è Claude Code con interfaccia grafica: perfetto per chi vuole vedere il codice cambiare in tempo reale senza usare il terminale."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Con Cursor puoi aprire l'intero progetto, selezionare un blocco HTML e dire 'aggiungi aria-label a tutti i bottoni senza testo' — lo fa in 3 secondi."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Per chi inizia con il vibecoding, Cursor abbassa ulteriormente la barriera: è un editor normale, con l'AI già dentro."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Cursor è costruito sopra VS Code e supporta tutte le sue estensioni — chi già usava VS Code non deve reimparare niente."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"La funzione 'Composer' di Cursor permette di modificare più file contemporaneamente con un singolo prompt — fondamentale per refactoring e progetti complessi."</li>
+            </ul>
+
+            <div class="term-section-label">Termini correlati</div>
+            <div class="correlati-list">
+              <a href="#term-vibecoding" class="correlato">vibecoding</a>
+              <a href="#term-repository" class="correlato">repository</a>
+              <a href="#term-llm" class="correlato">LLM</a>
+              <a href="#term-prompt" class="correlato">prompt</a>
+            </div>
+
+            <div class="term-section-label">Connessioni</div>
+            <div class="connessioni-grid">
+              <div class="conn-item"><span class="conn-label">Chi</span><span class="conn-val">Sviluppatori, vibecoder, designer che toccano il codice, fondatori tech</span></div>
+              <div class="conn-item"><span class="conn-label">Cosa</span><span class="conn-val">Editor AI-first basato su VS Code con LLM integrato (Claude, GPT-4)</span></div>
+              <div class="conn-item"><span class="conn-label">Come</span><span class="conn-val">Chat in-editor, inline edit, Composer multi-file, codebase context automatico</span></div>
+              <div class="conn-item"><span class="conn-label">Quando</span><span class="conn-val">Scrittura codice, refactoring, debug, comprensione di codebase esistenti</span></div>
+              <div class="conn-item"><span class="conn-label">Dove</span><span class="conn-val">App desktop Mac/Windows/Linux — cursor.com</span></div>
+              <div class="conn-item"><span class="conn-label">Perché</span><span class="conn-val">Scrivere codice più velocemente con AI, senza uscire dall'editor</span></div>
+            </div>
+
+            <button class="print-btn" onclick="printCard('term-cursor')" aria-label="Stampa scheda Cursor">🖨 Stampa scheda</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- /C -->
+
+    <!-- ===== D ===== -->
+    <div class="letter-section" data-letter="D" id="lettera-D">
+      <button class="letter-toggle" aria-expanded="true" aria-controls="content-D" onclick="toggleLetter('D', this)">
+        <span class="toggle-letter" aria-hidden="true">D</span>
+        <span>1 termine</span>
+        <span class="toggle-count" id="count-D">1</span>
+        <span class="toggle-arrow" aria-hidden="true">▼</span>
+      </button>
+      <div class="letter-content open" id="content-D">
+
+        <div class="term-card" id="term-database" data-term="database db base dati strutturati sql mysql postgresql server storage tabelle query archiviazione" data-letter="D">
+          <div class="term-header">
+            <span class="term-sigla">database</span>
+            <span class="term-esteso">base di dati · DB</span>
+          </div>
+          <button class="quiz-reveal-btn" onclick="revealCard('term-database')" aria-label="Rivela contenuto scheda database">▼ Rivela risposta</button>
+          <div class="term-quiz-content">
+
+            <div class="term-section-label">Significato</div>
+            <div class="term-text">Raccolta strutturata di dati organizzata in modo che possano essere facilmente archiviati, cercati, modificati e recuperati da un sistema software.</div>
+
+            <div class="term-section-label">Spiegazione semplice</div>
+            <div class="term-text">È come un archivio digitale super organizzato: tutti i dati dell'app (utenti, contenuti, ordini, appuntamenti) vivono qui, in tabelle simili a fogli Excel ma molto più potenti e veloci.</div>
+
+            <div class="interno-only">
+              <div class="term-section-label">Contesto A2A — accessibilità e EAA</div>
+              <div class="term-text">Nei siti dinamici, il database fornisce i contenuti delle pagine. Se i contenuti vengono salvati senza testi alternativi, heading o metadati linguistici, il database diventa la fonte delle barriere di accessibilità — ben prima che l'utente arrivi alla pagina.</div>
+            </div>
+
+            <div class="term-section-label">Chi usa questo termine</div>
+            <div class="term-text">Sviluppatori web, data analyst, CTO, gestori di e-commerce, chiunque lavori con sistemi che archiviano e recuperano dati (CMS, app, software gestionale).</div>
+
+            <div class="term-section-label">Quando viene usato</div>
+            <div class="term-text">Quando si parla di archiviazione dati, performance del sito, backup, gestione utenti, catalogo prodotti, o integrazione tra sistemi diversi.</div>
+
+            <div class="term-section-label">Come si scrive</div>
+            <div class="scrittura-row">
+              <span class="scrittura-sbagliato">data base</span>
+              <span class="scrittura-sep">→ errore comune (due parole)</span>
+              <span class="scrittura-ok">database</span>
+              <span class="scrittura-sep">·</span>
+              <span style="font-size:0.82rem;color:var(--grigio-testo)">anche <strong>DB</strong> come abbreviazione</span>
+            </div>
+
+            <div class="term-section-label">Pronuncia</div>
+            <div class="term-text">In italiano si pronuncia: <strong>dèi-ta-beis</strong> (all'inglese) o <strong>dà-ta-beis</strong> (variante con "a" aperta). In inglese: <strong>ˈdeɪtəbeɪs</strong>. L'abbreviazione <strong>DB</strong> si legge lettera per lettera: D-B.</div>
+
+            <div class="term-section-label">5 frasi per memorizzarla</div>
+            <ul class="frasi-list">
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Quando audito un sito e-commerce, la prima domanda è: il database salva i testi alternativi delle immagini prodotto?"</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Un CMS può avere tutte le funzionalità di accessibilità del mondo, ma se il database non le memorizza, ogni aggiornamento cancella il lavoro fatto."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Ho trovato siti che perdevano gli attributi di accessibilità ad ogni sincronizzazione: il problema era nel database, non nel frontend."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Un database relazionale organizza i dati in tabelle collegate tra loro — simile a un foglio Excel, ma scalabile a milioni di righe."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"I database più usati nel web sono MySQL, PostgreSQL e SQLite — tutti interrogabili con il linguaggio SQL."</li>
+            </ul>
+
+            <div class="term-section-label">Termini correlati</div>
+            <div class="correlati-list">
+              <a href="#term-backend" class="correlato">Backend</a>
+              <a href="#term-api" class="correlato">API</a>
+              <a href="#term-cms" class="correlato">CMS</a>
+            </div>
+
+            <div class="term-section-label">Connessioni</div>
+            <div class="connessioni-grid">
+              <div class="conn-item"><span class="conn-label">Chi</span><span class="conn-val">Sviluppatori, DBA, data analyst, titolari di siti dinamici</span></div>
+              <div class="conn-item"><span class="conn-label">Cosa</span><span class="conn-val">Tabelle strutturate, relazioni tra dati, query di ricerca e aggiornamento</span></div>
+              <div class="conn-item"><span class="conn-label">Come</span><span class="conn-val">SQL, ORM, API interne, connessioni sicure backend</span></div>
+              <div class="conn-item"><span class="conn-label">Quando</span><span class="conn-val">Ad ogni caricamento di pagina dinamica, login, acquisto, invio form</span></div>
+              <div class="conn-item"><span class="conn-label">Dove</span><span class="conn-val">Server cloud o fisico — mai direttamente nel browser del visitatore</span></div>
+              <div class="conn-item"><span class="conn-label">Perché</span><span class="conn-val">Archiviare, organizzare e recuperare dati in modo efficiente e sicuro</span></div>
+            </div>
+
+            <div class="eaa-badge">♿ Collegamento EAA</div>
+            <div class="term-text">Il database è spesso la causa nascosta delle non conformità: se non archivia testi alternativi, heading e metadati linguistici, ogni pagina generata dinamicamente nasce già inaccessibile — nessuna correzione frontend è sufficiente.</div>
+
+            <button class="print-btn" onclick="printCard('term-database')" aria-label="Stampa scheda database">🖨 Stampa scheda</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- /D -->
+
+    <!-- ===== E ===== -->
+    <div class="letter-section" data-letter="E" id="lettera-E">
+      <button class="letter-toggle" aria-expanded="true" aria-controls="content-E" onclick="toggleLetter('E', this)">
+        <span class="toggle-letter" aria-hidden="true">E</span>
+        <span>1 termine</span>
+        <span class="toggle-count" id="count-E">1</span>
+        <span class="toggle-arrow" aria-hidden="true">▼</span>
+      </button>
+      <div class="letter-content open" id="content-E">
+
+        <div class="term-card" id="term-eaa" data-term="eaa european accessibility act accessibilità direttiva europea wcag 2019 882 conformità obblighi digitale 2025" data-letter="E">
+          <div class="term-header">
+            <span class="term-sigla">EAA</span>
+            <span class="term-esteso">European Accessibility Act · Atto Europeo sull'Accessibilità</span>
+          </div>
+          <button class="quiz-reveal-btn" onclick="revealCard('term-eaa')" aria-label="Rivela contenuto scheda EAA">▼ Rivela risposta</button>
+          <div class="term-quiz-content">
+
+            <div class="term-section-label">Significato</div>
+            <div class="term-text">Direttiva europea (n. 2019/882) che obbliga le aziende che offrono prodotti e servizi digitali nel mercato UE a renderli accessibili. In Italia è stata recepita con il D.Lgs. 82/2022. La scadenza per i nuovi servizi è il <strong>28 giugno 2025</strong>; per i servizi già esistenti al 28 giugno 2025, si può chiedere una proroga fino al 2030 dimostrando onere sproporzionato.</div>
+
+            <div class="term-section-label">Spiegazione semplice</div>
+            <div class="term-text">È la legge europea che dice: "se vendi un servizio digitale nell'UE, deve essere usabile anche da persone con disabilità." Non è una raccomandazione — è un obbligo legale. Chi non si adegua rischia sanzioni amministrative.</div>
+
+            <div class="interno-only">
+              <div class="term-section-label">Contesto A2A — il core business di Beatrice</div>
+              <div class="term-text">L'EAA è il motivo per cui esiste AccessibilityToAll SRL. Beatrice aiuta le PMI — soprattutto nel settore hospitality, moda e manifattura con servizi digitali — a comprendere gli obblighi EAA, fare un audit WCAG e ottenere la conformità prima che scattino le sanzioni. Il contratto tipo è: Diagnosi EAA €350 + contratto annuale di conformità garantita €10.000/anno.</div>
+            </div>
+
+            <div class="term-section-label">Chi usa questo termine</div>
+            <div class="term-text">CEO e responsabili legali di aziende con siti, app o chioschi digitali rivolti al pubblico UE; consulenti di accessibilità; avvocati specializzati in compliance digitale; autorità di controllo.</div>
+
+            <div class="term-section-label">Quando viene usato</div>
+            <div class="term-text">Quando si parla di obblighi di accessibilità digitale per le aziende, di audit WCAG in ottica legale, di dichiarazione di conformità, o di rischio sanzioni per siti non accessibili dopo giugno 2025.</div>
+
+            <div class="term-section-label">Come si scrive</div>
+            <div class="scrittura-row">
+              <span class="scrittura-sbagliato">eaa</span>
+              <span class="scrittura-sep">→ minuscolo</span>
+              <span class="scrittura-ok">EAA</span>
+              <span class="scrittura-sep">·</span>
+              <span style="font-size:0.82rem;color:var(--grigio-testo)">sempre tutto maiuscolo, è una sigla</span>
+            </div>
+
+            <div class="term-section-label">Pronuncia</div>
+            <div class="term-text">In italiano lettera per lettera: <strong>E-A-A</strong> (<em>e-a-a</em>). Non esiste una pronuncia inglese diffusa in Italia per questa sigla.</div>
+
+            <div class="term-section-label">5 frasi per memorizzarla</div>
+            <ul class="frasi-list">
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"L'EAA non è una raccomandazione: è una legge. Dal 28 giugno 2025, un sito non accessibile espone l'azienda a sanzioni concrete."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Ho spiegato l'EAA a più di 200 imprenditori: la maggior parte non ne aveva mai sentito parlare — e i loro siti erano tutti non conformi."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"L'EAA vale per e-commerce, siti di prenotazione, app, chioschi, sportelli digitali: se ha un'interfaccia utente e si trova nel mercato UE, è obbligato."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"L'EAA chiede conformità ai requisiti WCAG 2.1 livello AA come standard tecnico di riferimento per la verifica dell'accessibilità."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Le PMI possono richiedere una deroga per 'onere sproporzionato', ma devono documentarla e rinnovarla annualmente — non è un'esenzione automatica."</li>
+            </ul>
+
+            <div class="term-section-label">Termini correlati</div>
+            <div class="correlati-list">
+              <a href="#term-wcag" class="correlato">WCAG</a>
+              <a href="#term-frontend" class="correlato">Frontend</a>
+              <a href="#term-backend" class="correlato">Backend</a>
+              <a href="#term-cms" class="correlato">CMS</a>
+            </div>
+
+            <div class="term-section-label">Connessioni</div>
+            <div class="connessioni-grid">
+              <div class="conn-item"><span class="conn-label">Chi</span><span class="conn-val">Aziende con servizi digitali nel mercato UE; autorità di controllo; consulenti compliance</span></div>
+              <div class="conn-item"><span class="conn-label">Cosa</span><span class="conn-val">Obbligo legale di accessibilità digitale (Direttiva UE 2019/882, D.Lgs. 82/2022 in Italia)</span></div>
+              <div class="conn-item"><span class="conn-label">Come</span><span class="conn-val">Audit WCAG 2.1 AA, dichiarazione di conformità, piano di adeguamento</span></div>
+              <div class="conn-item"><span class="conn-label">Quando</span><span class="conn-val">Nuovi servizi: dal 28 giugno 2025 · Servizi esistenti: proroga possibile fino al 2030</span></div>
+              <div class="conn-item"><span class="conn-label">Dove</span><span class="conn-val">Tutti i servizi digitali rivolti al pubblico nel mercato UE: siti, app, e-commerce, chioschi</span></div>
+              <div class="conn-item"><span class="conn-label">Perché</span><span class="conn-val">Garantire parità di accesso alle persone con disabilità — e rispettare la legge</span></div>
+            </div>
+
+            <div class="eaa-badge">♿ Core del lavoro A2A</div>
+            <div class="term-text">L'EAA è il motivo principale per cui le PMI si rivolgono ad AccessibilityToAll SRL: comprendere gli obblighi, fare un audit, ottenere la conformità documentata e mettere in sicurezza l'azienda dal rischio legale.</div>
+
+            <button class="print-btn" onclick="printCard('term-eaa')" aria-label="Stampa scheda EAA">🖨 Stampa scheda</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- /E -->
+
+    <!-- ===== F ===== -->
+    <div class="letter-section" data-letter="F" id="lettera-F">
+      <button class="letter-toggle" aria-expanded="true" aria-controls="content-F" onclick="toggleLetter('F', this)">
+        <span class="toggle-letter" aria-hidden="true">F</span>
+        <span>1 termine</span>
+        <span class="toggle-count" id="count-F">1</span>
+        <span class="toggle-arrow" aria-hidden="true">▼</span>
+      </button>
+      <div class="letter-content open" id="content-F">
+
+        <div class="term-card" id="term-frontend" data-term="frontend front-end lato client html css javascript design interfaccia utente wcag accessibilità contrasto schermo tastiera" data-letter="F">
+          <div class="term-header">
+            <span class="term-sigla">frontend</span>
+            <span class="term-esteso">lato client · front-end · client-side</span>
+          </div>
+          <button class="quiz-reveal-btn" onclick="revealCard('term-frontend')" aria-label="Rivela contenuto scheda frontend">▼ Rivela risposta</button>
+          <div class="term-quiz-content">
+
+            <div class="term-section-label">Significato</div>
+            <div class="term-text">La parte visibile di un sito o applicazione web — tutto ciò che l'utente vede e con cui interagisce: layout, colori, testi, pulsanti, form. Si contrappone al <a href="#term-backend" class="term-link">backend</a>, la parte invisibile.</div>
+
+            <div class="term-section-label">Spiegazione semplice</div>
+            <div class="term-text">È la sala del ristorante: il cliente vede e usa tutto — tavoli, menu, camerieri. Il frontend è ciò che appare nel browser, mentre il backend (la cucina) rimane nascosto.</div>
+
+            <div class="interno-only">
+              <div class="term-section-label">Contesto A2A — accessibilità e EAA</div>
+              <div class="term-text">Il frontend è la prima linea dell'accessibilità: contrasto dei colori, dimensioni del testo, etichette dei pulsanti, ordine di focus per la tastiera — tutto ciò che uno screen reader o un utente con difficoltà motorie incontra direttamente.</div>
+            </div>
+
+            <div class="term-section-label">Chi usa questo termine</div>
+            <div class="term-text">Web designer, sviluppatori frontend, UX/UI designer, consulenti di accessibilità, project manager digitali.</div>
+
+            <div class="term-section-label">Quando viene usato</div>
+            <div class="term-text">Quando si parla di design del sito, user experience, audit visivo, adattamento mobile, componenti interattivi (form, menu, modal).</div>
+
+            <div class="term-section-label">Come si scrive</div>
+            <div class="scrittura-row">
+              <span class="scrittura-sbagliato">front end</span>
+              <span class="scrittura-sep">→ errore comune (con spazio)</span>
+              <span class="scrittura-ok">frontend</span>
+              <span class="scrittura-sep">·</span>
+              <span style="font-size:0.82rem;color:var(--grigio-testo)">anche <strong>front-end</strong> (con trattino) è accettato</span>
+            </div>
+
+            <div class="term-section-label">Pronuncia</div>
+            <div class="term-text">In italiano si pronuncia quasi come in inglese: <strong>front-end</strong> (accento sulla prima sillaba, "o" aperta). In inglese: <strong>frʌnt-ɛnd</strong>. Non esiste una traduzione italiana standard: <em>lato client</em> o <em>client-side</em> sono i sinonimi tecnici più diffusi.</div>
+
+            <div class="term-section-label">5 frasi per memorizzarla</div>
+            <ul class="frasi-list">
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Il frontend è la prima cosa che l'utente tocca: se non è accessibile, nessuna funzionalità del backend salverà l'esperienza."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Spesso mi mostrano il frontend perfetto — animazioni, colori, font curati — e poi nell'audit trovo contrasto insufficiente e zero etichette ARIA."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Il frontend è la vetrina: bella ma vuota non basta."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Il frontend è sviluppato con HTML, CSS e JavaScript e determina l'aspetto visivo e l'interattività del sito."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Un frontend accessibile rispetta WCAG 2.1 AA: contrasto minimo 4.5:1, testo scalabile, navigazione completa da tastiera."</li>
+            </ul>
+
+            <div class="term-section-label">Termini correlati</div>
+            <div class="correlati-list">
+              <a href="#term-backend" class="correlato">Backend</a>
+              <a href="#term-cms" class="correlato">CMS</a>
+              <a href="#term-api" class="correlato">API</a>
+            </div>
+
+            <div class="term-section-label">Connessioni</div>
+            <div class="connessioni-grid">
+              <div class="conn-item"><span class="conn-label">Chi</span><span class="conn-val">Web designer, sviluppatori frontend, auditor di accessibilità, utente finale</span></div>
+              <div class="conn-item"><span class="conn-label">Cosa</span><span class="conn-val">HTML, CSS, JavaScript — interfaccia visiva e componenti interattivi</span></div>
+              <div class="conn-item"><span class="conn-label">Come</span><span class="conn-val">Browser, screen reader, dispositivi touch, navigazione da tastiera</span></div>
+              <div class="conn-item"><span class="conn-label">Quando</span><span class="conn-val">Ogni navigazione, interazione utente, audit visivo o tecnico</span></div>
+              <div class="conn-item"><span class="conn-label">Dove</span><span class="conn-val">Nel browser del visitatore — dispositivi mobile, tablet e desktop</span></div>
+              <div class="conn-item"><span class="conn-label">Perché</span><span class="conn-val">Comunicare, informare, guidare l'utente verso un'azione</span></div>
+            </div>
+
+            <div class="eaa-badge">♿ Collegamento EAA</div>
+            <div class="term-text">Il frontend è il livello dove si verificano la maggior parte dei requisiti WCAG: contrasto, etichette, focus, ordine di lettura. Un frontend non accessibile è non conforme all'EAA — indipendentemente dalla qualità del backend.</div>
+
+            <button class="print-btn" onclick="printCard('term-frontend')" aria-label="Stampa scheda frontend">🖨 Stampa scheda</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- /F -->
+
+    <!-- ===== G ===== -->
+    <div class="letter-section" data-letter="G" id="lettera-G">
+      <button class="letter-toggle" aria-expanded="true" aria-controls="content-G" onclick="toggleLetter('G', this)">
+        <span class="toggle-letter" aria-hidden="true">G</span>
+        <span>1 termine</span>
+        <span class="toggle-count" id="count-G">1</span>
+        <span class="toggle-arrow" aria-hidden="true">▼</span>
+      </button>
+      <div class="letter-content open" id="content-G">
+
+        <div class="term-card" id="term-github" data-term="github git repository hosting codice collaborazione software versioning push pull commit open source copilot microsoft" data-letter="G">
+          <div class="term-header">
+            <span class="term-sigla">GitHub</span>
+            <span class="term-esteso">piattaforma cloud per repository di codice e collaborazione software</span>
+          </div>
+          <button class="quiz-reveal-btn" onclick="revealCard('term-github')" aria-label="Rivela contenuto scheda GitHub">▼ Rivela risposta</button>
+          <div class="term-quiz-content">
+
+            <div class="term-section-label">Significato</div>
+            <div class="term-text">Servizio cloud (di proprietà di Microsoft) dove si ospitano repository Git, si collabora su progetti software, si automatizzano workflow di sviluppo e si pubblica codice open source. È la piattaforma dove vive la maggior parte del codice pubblico del mondo.</div>
+
+            <div class="term-section-label">Spiegazione semplice</div>
+            <div class="term-text">È Google Drive per il codice, ma con una differenza fondamentale: traccia ogni modifica nel tempo. Puoi vedere chi ha cambiato cosa e quando, tornare a versioni precedenti, lavorare in team senza sovrascriversi, e pubblicare il tuo lavoro online. Vercel si collega a GitHub per pubblicare il sito automaticamente ad ogni aggiornamento.</div>
+
+            <div class="interno-only">
+              <div class="term-section-label">Contesto A2A — repository e vibecoding</div>
+              <div class="term-text">GitHub ospita i repository dei progetti costruiti con il vibecoding. Beatrice può conservare versioni stabili dei cruscotti, delle skill e dell'hub, condividerli con collaboratori e collegarli a Vercel per la pubblicazione automatica online. GitHub Copilot è la loro alternativa AI a Cursor/Claude Code.</div>
+            </div>
+
+            <div class="term-section-label">Chi usa questo termine</div>
+            <div class="term-text">Sviluppatori di tutto il mondo, team tecnici, vibecoder, aziende open source, chiunque lavori con codice e voglia versionamento, backup e collaborazione.</div>
+
+            <div class="term-section-label">Quando viene usato</div>
+            <div class="term-text">Quando si parla di hosting del codice sorgente, collaborazione su progetti tecnici, deploy automatico tramite Vercel/Netlify, o pubblicazione di progetti open source.</div>
+
+            <div class="term-section-label">Come si scrive</div>
+            <div class="scrittura-row">
+              <span class="scrittura-sbagliato">GITHUB</span>
+              <span class="scrittura-sep">→ tutto maiuscolo (è un nome proprio)</span>
+              <span class="scrittura-ok">GitHub</span>
+              <span class="scrittura-sep">·</span>
+              <span style="font-size:0.82rem;color:var(--grigio-testo)">G maiuscola + H maiuscola, resto minuscolo</span>
+            </div>
+
+            <div class="term-section-label">Pronuncia</div>
+            <div class="term-text">In italiano: <strong>ghit-hàb</strong>. In inglese: <strong>ˈɡɪthʌb</strong>. "Git" è il sistema di versionamento sottostante, "Hub" è il centro di raccolta — letteralmente "hub del codice Git".</div>
+
+            <div class="term-section-label">5 frasi per memorizzarla</div>
+            <ul class="frasi-list">
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"GitHub è dove tengo il codice al sicuro: se il computer si rompe o Claude fa un pasticcio, il repository è intatto e recupero tutto."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Collegare GitHub a Vercel significa che ogni volta che salvo una modifica, il sito si aggiorna online in automatico — deploy con zero clic."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Ho trovato su GitHub centinaia di componenti HTML accessibili già pronti — non ho dovuto scrivere tutto da zero."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"GitHub ha oltre 100 milioni di repository pubblici: è la biblioteca del codice umano, consultabile gratuitamente da chiunque."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"GitHub Actions permette di automatizzare test, build e deploy ogni volta che si fa un push — il cuore del CI/CD moderno."</li>
+            </ul>
+
+            <div class="term-section-label">Termini correlati</div>
+            <div class="correlati-list">
+              <a href="#term-repository" class="correlato">repository</a>
+              <a href="#term-vercel" class="correlato">Vercel</a>
+              <a href="#term-backend" class="correlato">Backend</a>
+              <a href="#term-vibecoding" class="correlato">vibecoding</a>
+            </div>
+
+            <div class="term-section-label">Connessioni</div>
+            <div class="connessioni-grid">
+              <div class="conn-item"><span class="conn-label">Chi</span><span class="conn-val">Sviluppatori, team tecnici, vibecoder, aziende tech — 100M+ utenti globali</span></div>
+              <div class="conn-item"><span class="conn-label">Cosa</span><span class="conn-val">Hosting cloud per repository Git, collaborazione, automazione, AI (Copilot)</span></div>
+              <div class="conn-item"><span class="conn-label">Come</span><span class="conn-val">Push/pull via Git, interfaccia web, GitHub CLI, integrazione con Vercel/Netlify</span></div>
+              <div class="conn-item"><span class="conn-label">Quando</span><span class="conn-val">Salvataggio codice, collaborazione team, deploy automatico, backup progetto</span></div>
+              <div class="conn-item"><span class="conn-label">Dove</span><span class="conn-val">github.com — gratuito per repository pubblici e privati (con limiti)</span></div>
+              <div class="conn-item"><span class="conn-label">Perché</span><span class="conn-val">Conservare il codice, collaborare, automatizzare il deploy, non perdere nulla</span></div>
+            </div>
+
+            <button class="print-btn" onclick="printCard('term-github')" aria-label="Stampa scheda GitHub">🖨 Stampa scheda</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- /G -->
+
+    <!-- ===== L ===== -->
+    <div class="letter-section" data-letter="L" id="lettera-L">
+      <button class="letter-toggle" aria-expanded="true" aria-controls="content-L" onclick="toggleLetter('L', this)">
+        <span class="toggle-letter" aria-hidden="true">L</span>
+        <span>1 termine</span>
+        <span class="toggle-count" id="count-L">1</span>
+        <span class="toggle-arrow" aria-hidden="true">▼</span>
+      </button>
+      <div class="letter-content open" id="content-L">
+
+        <div class="term-card" id="term-llm" data-term="llm large language model modello linguaggio AI artificiale ChatGPT Claude Llama Gemini GPT addestramento testo" data-letter="L">
+          <div class="term-header">
+            <span class="term-sigla">LLM</span>
+            <span class="term-esteso">Large Language Model · modello di linguaggio di grandi dimensioni</span>
+          </div>
+          <button class="quiz-reveal-btn" onclick="revealCard('term-llm')" aria-label="Rivela contenuto scheda LLM">▼ Rivela risposta</button>
+          <div class="term-quiz-content">
+
+            <div class="term-section-label">Significato</div>
+            <div class="term-text">Tipo di modello di intelligenza artificiale addestrato su enormi quantità di testo per comprendere e generare linguaggio naturale. È il motore che alimenta strumenti come ChatGPT, Claude, Groq e Gemini.</div>
+
+            <div class="term-section-label">Spiegazione semplice</div>
+            <div class="term-text">È come un archivio di tutta la scrittura umana che ha "imparato" a rispondere, scrivere e ragionare leggendo miliardi di pagine. Non "capisce" come un essere umano, ma è straordinariamente bravo a completare testo in modo coerente e utile.</div>
+
+            <div class="interno-only">
+              <div class="term-section-label">Contesto A2A — vibecoding e tool AI</div>
+              <div class="term-text">Tutti i tool AI usati da Beatrice — Claude (Anthropic), Groq (Llama/Mixtral), ChatGPT (OpenAI) — sono basati su LLM. Comprendere cosa sono e come funzionano aiuta a usarli meglio: prompt più precisi, risultati migliori, meno token sprecati.</div>
+            </div>
+
+            <div class="term-section-label">Chi usa questo termine</div>
+            <div class="term-text">Sviluppatori AI, ricercatori, giornalisti tech, manager che valutano soluzioni AI per la propria azienda, chiunque lavori con strumenti di intelligenza artificiale generativa.</div>
+
+            <div class="term-section-label">Quando viene usato</div>
+            <div class="term-text">Quando si parla di come funzionano i modelli AI, di scelta del modello giusto per un task, di costi AI, o di limiti delle tecnologie di intelligenza artificiale attuale.</div>
+
+            <div class="term-section-label">Come si scrive</div>
+            <div class="scrittura-row">
+              <span class="scrittura-sbagliato">llm</span>
+              <span class="scrittura-sep">→ minuscolo</span>
+              <span class="scrittura-ok">LLM</span>
+              <span class="scrittura-sep">·</span>
+              <span style="font-size:0.82rem;color:var(--grigio-testo)">sempre tutto maiuscolo, è una sigla</span>
+            </div>
+
+            <div class="term-section-label">Pronuncia</div>
+            <div class="term-text">In italiano lettera per lettera: <strong>L-L-M</strong> (<em>elle-elle-emme</em>). In inglese identica: <strong>ɛl-ɛl-ɛm</strong>.</div>
+
+            <div class="term-section-label">5 frasi per memorizzarla</div>
+            <ul class="frasi-list">
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Quando scelgo quale AI usare per un task, sto scegliendo quale LLM — ogni modello ha punti di forza diversi per velocità, costo e qualità del testo."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Claude è l'LLM che uso di più: lungo contesto, rispetto delle istruzioni, ottimo in italiano."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Un LLM non sa quando è oggi, non naviga il web da solo, non ha memoria tra conversazioni diverse — sono limiti strutturali da conoscere."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"I principali LLM nel 2025: GPT-4o (OpenAI), Claude 3.5/4 (Anthropic), Llama 3.3 (Meta, open source), Gemini (Google), Mixtral (Mistral AI)."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Un LLM genera testo token per token, calcolando la probabilità di ogni parola successiva in base al contesto — non 'pensa', elabora pattern statistici."</li>
+            </ul>
+
+            <div class="term-section-label">Termini correlati</div>
+            <div class="correlati-list">
+              <a href="#term-token" class="correlato">Token</a>
+              <a href="#term-prompt" class="correlato">Prompt</a>
+              <a href="#term-api" class="correlato">API</a>
+              <a href="#term-vibecoding" class="correlato">vibecoding</a>
+            </div>
+
+            <div class="term-section-label">Connessioni</div>
+            <div class="connessioni-grid">
+              <div class="conn-item"><span class="conn-label">Chi</span><span class="conn-val">Ricercatori AI, sviluppatori, aziende che integrano AI, utenti di ChatGPT/Claude</span></div>
+              <div class="conn-item"><span class="conn-label">Cosa</span><span class="conn-val">Modello addestrato su testo per comprendere e generare linguaggio naturale</span></div>
+              <div class="conn-item"><span class="conn-label">Come</span><span class="conn-val">Trasformers, addestramento su miliardi di token, RLHF (fine-tuning con feedback umano)</span></div>
+              <div class="conn-item"><span class="conn-label">Quando</span><span class="conn-val">Ogni volta che si usa un tool AI generativo per scrivere, ragionare o programmare</span></div>
+              <div class="conn-item"><span class="conn-label">Dove</span><span class="conn-val">API cloud (OpenAI, Anthropic, Groq), app consumer (ChatGPT, Claude.ai), IDE (Cursor)</span></div>
+              <div class="conn-item"><span class="conn-label">Perché</span><span class="conn-val">Automatizzare la generazione di testo, codice, analisi — ad alta qualità e in pochi secondi</span></div>
+            </div>
+
+            <button class="print-btn" onclick="printCard('term-llm')" aria-label="Stampa scheda LLM">🖨 Stampa scheda</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- /L -->
+
+    <!-- ===== O ===== -->
+    <div class="letter-section" data-letter="O" id="lettera-O">
+      <button class="letter-toggle" aria-expanded="true" aria-controls="content-O" onclick="toggleLetter('O', this)">
+        <span class="toggle-letter" aria-hidden="true">O</span>
+        <span>1 termine</span>
+        <span class="toggle-count" id="count-O">1</span>
+        <span class="toggle-arrow" aria-hidden="true">▼</span>
+      </button>
+      <div class="letter-content open" id="content-O">
+
+        <div class="term-card" id="term-ota" data-term="ota online travel agency prenotazione hotel booking expedia commissione revenue hospitality parity rate" data-letter="O">
+          <div class="term-header">
+            <span class="term-sigla">OTA</span>
+            <span class="term-esteso">Online Travel Agency</span>
+          </div>
+          <button class="quiz-reveal-btn" onclick="revealCard('term-ota')" aria-label="Rivela contenuto scheda OTA">▼ Rivela risposta</button>
+          <div class="term-quiz-content">
+
+            <div class="term-section-label">Significato</div>
+            <div class="term-text">Piattaforme digitali intermediarie per la prenotazione di viaggi e alloggi — Booking.com, Expedia, Hotels.com, Airbnb.</div>
+
+            <div class="term-section-label">Spiegazione semplice</div>
+            <div class="term-text">Sono i "negozi online" che vendono camere d'albergo al posto dell'hotel. L'hotel ci guadagna di meno perché la piattaforma trattiene una commissione del 15–25%, ma raggiunge più clienti senza dover fare marketing da solo.</div>
+
+            <div class="interno-only">
+              <div class="term-section-label">Contesto A2A — accessibilità e EAA</div>
+              <div class="term-text">Nel settore hospitality, avere un booking diretto sul proprio sito significa evitare le commissioni OTA e mantenere un rapporto diretto con il cliente — ma richiede che il sito sia curato, accessibile e ben posizionato.</div>
+            </div>
+
+            <div class="term-section-label">Chi usa questo termine</div>
+            <div class="term-text">Operatori alberghieri, revenue manager, direttori d'hotel, agenzie di viaggio, consulenti del settore hospitality, turisti digitali.</div>
+
+            <div class="term-section-label">Quando viene usato</div>
+            <div class="term-text">Quando si parla di distribuzione delle camere online, commissioni sulla prenotazione, confronto tra booking diretto (sul sito dell'hotel) e booking indiretto (tramite piattaforma), o strategie di pricing dinamico.</div>
+
+            <div class="term-section-label">Come si scrive</div>
+            <div class="scrittura-row">
+              <span class="scrittura-sbagliato">ota</span>
+              <span class="scrittura-sep">→ minuscolo</span>
+              <span class="scrittura-ok">OTA</span>
+              <span class="scrittura-sep">·</span>
+              <span class="scrittura-sbagliato">ATO</span>
+              <span class="scrittura-sep">→ lettere invertite</span>
+            </div>
+
+            <div class="term-section-label">Pronuncia</div>
+            <div class="term-text">In italiano si legge lettera per lettera: <strong>O-T-A</strong>. In inglese la pronuncia è identica: <strong>oʊ-tiː-eɪ</strong>. Non esiste una versione italiana del termine: si usa sempre l'acronimo inglese.</div>
+
+            <div class="term-section-label">5 frasi per memorizzarla</div>
+            <ul class="frasi-list">
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Le OTA sono come un negozio di scarpe non monomarca: trovi tutto, ma l'hotel non ti conosce davvero."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Le OTA mi fanno risparmiare come cliente. Ma fanno pagare chi mi ospita — ogni volta."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Quando un hotel non ha un sito che funziona, le OTA diventano l'unica strada — e questo ha un costo."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Le OTA aggregano migliaia di strutture ricettive in un'unica piattaforma: il cliente confronta prezzi e prenota in pochi clic."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Ogni prenotazione tramite OTA costa alla struttura una commissione: tra il 15% e il 25% del prezzo della camera."</li>
+            </ul>
+
+            <div class="term-section-label">Termini correlati</div>
+            <div class="correlati-list">
+              <span class="correlato-pending">Booking diretto</span>
+              <span class="correlato-pending">Commissione</span>
+              <span class="correlato-pending">Revenue management</span>
+              <span class="correlato-pending">Parity rate</span>
+            </div>
+
+            <div class="term-section-label">Connessioni</div>
+            <div class="connessioni-grid">
+              <div class="conn-item"><span class="conn-label">Chi</span><span class="conn-val">Turista digitale, struttura ricettiva (hotel, B&B), piattaforma intermediaria</span></div>
+              <div class="conn-item"><span class="conn-label">Cosa</span><span class="conn-val">Piattaforma di prenotazione, lista disponibilità, prezzi, recensioni</span></div>
+              <div class="conn-item"><span class="conn-label">Come</span><span class="conn-val">Commissione percentuale, motore di ricerca, calendario disponibilità</span></div>
+              <div class="conn-item"><span class="conn-label">Quando</span><span class="conn-val">Fase di ricerca e prenotazione di alloggio o viaggio</span></div>
+              <div class="conn-item"><span class="conn-label">Dove</span><span class="conn-val">Online, via app o sito web della piattaforma</span></div>
+              <div class="conn-item"><span class="conn-label">Perché</span><span class="conn-val">Aggregare offerta, semplificare la ricerca per il cliente, aumentare visibilità alla struttura</span></div>
+            </div>
+
+            <div class="eaa-badge">♿ Collegamento EAA</div>
+            <div class="term-text">I siti delle OTA devono essere accessibili per legge (EAA). Per un hotel, investire in un sito accessibile e ben posizionato significa poter fare booking diretto — riducendo la dipendenza dalle OTA e mantenendo il controllo sul rapporto con il cliente.</div>
+
+            <button class="print-btn" onclick="printCard('term-ota')" aria-label="Stampa scheda OTA">🖨 Stampa scheda</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- /O -->
+
+    <!-- ===== P ===== -->
+    <div class="letter-section" data-letter="P" id="lettera-P">
+      <button class="letter-toggle" aria-expanded="true" aria-controls="content-P" onclick="toggleLetter('P', this)">
+        <span class="toggle-letter" aria-hidden="true">P</span>
+        <span>2 termini</span>
+        <span class="toggle-count" id="count-P">2</span>
+        <span class="toggle-arrow" aria-hidden="true">▼</span>
+      </button>
+      <div class="letter-content open" id="content-P">
+
+        <!-- PROMPT -->
+        <div class="term-card" id="term-prompt" data-term="prompt istruzione testo AI modello linguaggio input richiesta comando ChatGPT Claude ottimizzazione" data-letter="P">
+          <div class="term-header">
+            <span class="term-sigla">prompt</span>
+            <span class="term-esteso">istruzione in linguaggio naturale per un modello AI</span>
+          </div>
+          <button class="quiz-reveal-btn" onclick="revealCard('term-prompt')" aria-label="Rivela contenuto scheda prompt">▼ Rivela risposta</button>
+          <div class="term-quiz-content">
+
+            <div class="term-section-label">Significato</div>
+            <div class="term-text">Testo (domanda, comando o contesto) inviato a un modello AI per ottenere una risposta specifica. La qualità del prompt determina direttamente la qualità della risposta: un prompt preciso dà output precisi, uno vago dà output generici.</div>
+
+            <div class="term-section-label">Spiegazione semplice</div>
+            <div class="term-text">È come dare istruzioni a un collaboratore molto capace ma molto letterale: più sei specifico su cosa vuoi, come lo vuoi e in che formato, migliore sarà il risultato. "Scrivimi un'email" è un pessimo prompt; "Scrivimi un'email formale di 100 parole a un hotel per proporre una consulenza EAA, tono professionale" è un ottimo prompt.</div>
+
+            <div class="interno-only">
+              <div class="term-section-label">Contesto A2A — prompt engineering</div>
+              <div class="term-text">Nel vibecoding con Claude, la qualità del prompt è tutto. Beatrice scrive prompt strutturati con: ruolo assegnato all'AI, contesto del progetto A2A, output atteso (formato, lunghezza, tono), vincoli (WCAG, colori, lingua italiana). Prompt migliori = meno iterazioni = meno token consumati.</div>
+            </div>
+
+            <div class="term-section-label">Chi usa questo termine</div>
+            <div class="term-text">Chiunque usi strumenti AI generativi: marketer, designer, sviluppatori, CEO, consulenti. Il "prompt engineering" è diventata una competenza professionale riconosciuta.</div>
+
+            <div class="term-section-label">Quando viene usato</div>
+            <div class="term-text">Ogni volta che si interagisce con un modello AI — che sia una chat, una API call, un workflow automatizzato o un agente.</div>
+
+            <div class="term-section-label">Come si scrive</div>
+            <div class="scrittura-row">
+              <span class="scrittura-ok">prompt</span>
+              <span class="scrittura-sep">·</span>
+              <span style="font-size:0.82rem;color:var(--grigio-testo)">invariabile in italiano: <strong>un prompt</strong>, <strong>i prompt</strong> (non "prompts")</span>
+            </div>
+
+            <div class="term-section-label">Pronuncia</div>
+            <div class="term-text">In italiano: <strong>pròmpt</strong>. In inglese: <strong>prɒmpt</strong>. La "p" finale si sente — non è muta come in alcune parole inglesi.</div>
+
+            <div class="term-section-label">5 frasi per memorizzarla</div>
+            <ul class="frasi-list">
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Il prompt è la differenza tra un output che uso subito e uno che butto e riscrivo da capo — è la prima competenza AI da sviluppare."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Ogni prompt che scrivo per Claude include: contesto A2A, output atteso, formato, lingua italiana — mai meno di tre elementi."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Ho salvato i prompt migliori in una libreria: per le skill di Claude, per i cruscotti, per le email EAA. Sono asset aziendali veri."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Il 'prompt engineering' è la disciplina che studia come strutturare i prompt per ottenere output più accurati, pertinenti e controllati dai modelli AI."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Un prompt può includere: istruzioni dirette, esempi di output atteso (few-shot), ruolo da assumere, vincoli e formato della risposta."</li>
+            </ul>
+
+            <div class="term-section-label">Termini correlati</div>
+            <div class="correlati-list">
+              <a href="#term-llm" class="correlato">LLM</a>
+              <a href="#term-token" class="correlato">Token</a>
+              <a href="#term-vibecoding" class="correlato">vibecoding</a>
+              <a href="#term-api" class="correlato">API</a>
+            </div>
+
+            <div class="term-section-label">Connessioni</div>
+            <div class="connessioni-grid">
+              <div class="conn-item"><span class="conn-label">Chi</span><span class="conn-val">Chiunque usi AI generativa: utenti, sviluppatori, marketer, CEO tech-savvy</span></div>
+              <div class="conn-item"><span class="conn-label">Cosa</span><span class="conn-val">Testo di input (domanda, istruzione, contesto) inviato a un modello AI</span></div>
+              <div class="conn-item"><span class="conn-label">Come</span><span class="conn-val">Testo libero, template strutturati, few-shot examples, system prompt</span></div>
+              <div class="conn-item"><span class="conn-label">Quando</span><span class="conn-val">Ad ogni interazione con un modello AI — chat, API, workflow, agente</span></div>
+              <div class="conn-item"><span class="conn-label">Dove</span><span class="conn-val">ChatGPT, Claude, Groq, qualsiasi interfaccia o API AI</span></div>
+              <div class="conn-item"><span class="conn-label">Perché</span><span class="conn-val">Guidare il modello verso l'output desiderato con precisione e controllo</span></div>
+            </div>
+
+            <button class="print-btn" onclick="printCard('term-prompt')" aria-label="Stampa scheda prompt">🖨 Stampa scheda</button>
+          </div>
+        </div>
+
+        <!-- PWA -->
+        <div class="term-card" id="term-pwa" data-term="pwa progressive web app applicazione installabile home screen offline service worker manifest iphone android safari" data-letter="P">
+          <div class="term-header">
+            <span class="term-sigla">PWA</span>
+            <span class="term-esteso">Progressive Web App · app web progressiva</span>
+          </div>
+          <button class="quiz-reveal-btn" onclick="revealCard('term-pwa')" aria-label="Rivela contenuto scheda PWA">▼ Rivela risposta</button>
+          <div class="term-quiz-content">
+
+            <div class="term-section-label">Significato</div>
+            <div class="term-text">Applicazione web che usa tecnologie moderne (service worker, manifest) per offrire un'esperienza simile a un'app nativa — installabile su Home Screen, funzionante offline (parzialmente), veloce e accessibile senza passare per l'App Store.</div>
+
+            <div class="term-section-label">Spiegazione semplice</div>
+            <div class="term-text">È un sito web che "si comporta come un'app": si può aggiungere alla Home Screen dell'iPhone, si apre senza la barra del browser, può funzionare anche senza connessione (per i contenuti già caricati). Niente download dall'App Store, niente aggiornamenti manuali.</div>
+
+            <div class="interno-only">
+              <div class="term-section-label">Contesto A2A — hub mobile</div>
+              <div class="term-text">L'Hub Mobile di AccessibilityToAll è costruito come PWA: Beatrice può aggiungerlo alla Home Screen del suo iPhone e aprirlo come un'app dedicata, senza passare dal browser. Basta aggiungere i meta tag <code>apple-mobile-web-app-capable</code> e un manifest.json all'HTML.</div>
+            </div>
+
+            <div class="term-section-label">Chi usa questo termine</div>
+            <div class="term-text">Sviluppatori web, product manager, aziende che vogliono un'app mobile senza i costi e le restrizioni degli app store, chiunque costruisca tool interni accessibili da mobile.</div>
+
+            <div class="term-section-label">Quando viene usato</div>
+            <div class="term-text">Quando si parla di app mobile a basso costo, tool interni accessibili da smartphone, alternative alle app native, o accessibilità su dispositivi mobili.</div>
+
+            <div class="term-section-label">Come si scrive</div>
+            <div class="scrittura-row">
+              <span class="scrittura-sbagliato">pwa</span>
+              <span class="scrittura-sep">→ minuscolo</span>
+              <span class="scrittura-ok">PWA</span>
+              <span class="scrittura-sep">·</span>
+              <span style="font-size:0.82rem;color:var(--grigio-testo)">sempre tutto maiuscolo, è una sigla</span>
+            </div>
+
+            <div class="term-section-label">Pronuncia</div>
+            <div class="term-text">In italiano lettera per lettera: <strong>P-W-A</strong> (<em>pi-doppiavu-a</em>). In inglese: <strong>piː-dʌb(ə)ljuː-eɪ</strong>.</div>
+
+            <div class="term-section-label">5 frasi per memorizzarla</div>
+            <ul class="frasi-list">
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"L'Hub Mobile è una PWA: lo aggiungo alla Home Screen dell'iPhone e si apre come un'app dedicata — zero App Store, zero aggiornamenti manuali."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Per una PMI, una PWA è spesso meglio di un'app nativa: si aggiorna da server, funziona su iPhone e Android, costa il 10% di un'app tradizionale."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Le PWA devono essere accessibili: se si installa sulla Home Screen di un utente con disabilità visiva, deve funzionare con lo screen reader."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Una PWA usa un 'service worker' per intercettare le richieste di rete e servire contenuti dalla cache — questo la rende funzionante offline."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Su iPhone, per installare una PWA: apri in Safari → pulsante Condividi → 'Aggiungi alla schermata Home'. Chrome su Android lo propone automaticamente."</li>
+            </ul>
+
+            <div class="term-section-label">Termini correlati</div>
+            <div class="correlati-list">
+              <a href="#term-frontend" class="correlato">Frontend</a>
+              <a href="#term-backend" class="correlato">Backend</a>
+              <a href="#term-eaa" class="correlato">EAA</a>
+              <a href="#term-wcag" class="correlato">WCAG</a>
+            </div>
+
+            <div class="term-section-label">Connessioni</div>
+            <div class="connessioni-grid">
+              <div class="conn-item"><span class="conn-label">Chi</span><span class="conn-val">Sviluppatori web, aziende che vogliono app mobile senza App Store</span></div>
+              <div class="conn-item"><span class="conn-label">Cosa</span><span class="conn-val">Sito web installabile su Home Screen con UX da app nativa</span></div>
+              <div class="conn-item"><span class="conn-label">Come</span><span class="conn-val">HTML+CSS+JS, service worker, manifest.json, meta tag Apple</span></div>
+              <div class="conn-item"><span class="conn-label">Quando</span><span class="conn-val">Tool interni, app catalogo, hub aziendali, sostituire app native a basso traffico</span></div>
+              <div class="conn-item"><span class="conn-label">Dove</span><span class="conn-val">Browser Safari (iPhone), Chrome (Android), qualsiasi browser moderno</span></div>
+              <div class="conn-item"><span class="conn-label">Perché</span><span class="conn-val">App mobile senza costi App Store, aggiornamento istantaneo, accessibile da qualsiasi dispositivo</span></div>
+            </div>
+
+            <div class="eaa-badge">♿ Collegamento EAA</div>
+            <div class="term-text">Una PWA rientra nell'ambito EAA se è un servizio digitale rivolto al pubblico. Deve rispettare WCAG 2.1 AA: contrasto, etichette, navigazione da tastiera, compatibilità con screen reader — anche nell'esperienza installata su Home Screen.</div>
+
+            <button class="print-btn" onclick="printCard('term-pwa')" aria-label="Stampa scheda PWA">🖨 Stampa scheda</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- /P -->
+
+    <!-- ===== R ===== -->
+    <div class="letter-section" data-letter="R" id="lettera-R">
+      <button class="letter-toggle" aria-expanded="true" aria-controls="content-R" onclick="toggleLetter('R', this)">
+        <span class="toggle-letter" aria-hidden="true">R</span>
+        <span>1 termine</span>
+        <span class="toggle-count" id="count-R">1</span>
+        <span class="toggle-arrow" aria-hidden="true">▼</span>
+      </button>
+      <div class="letter-content open" id="content-R">
+
+        <div class="term-card" id="term-repository" data-term="repository repo archivio codice git github gitlab versioning controllo versione branch commit push pull clone" data-letter="R">
+          <div class="term-header">
+            <span class="term-sigla">repository</span>
+            <span class="term-esteso">archivio di codice · repo</span>
+          </div>
+          <button class="quiz-reveal-btn" onclick="revealCard('term-repository')" aria-label="Rivela contenuto scheda repository">▼ Rivela risposta</button>
+          <div class="term-quiz-content">
+
+            <div class="term-section-label">Significato</div>
+            <div class="term-text">Sistema di archiviazione centralizzato per il codice sorgente di un progetto software, con tracciamento completo di tutte le modifiche nel tempo. Ogni cambiamento viene registrato con autore, data e descrizione — ed è sempre possibile tornare a qualsiasi versione precedente.</div>
+
+            <div class="term-section-label">Spiegazione semplice</div>
+            <div class="term-text">È come una cartella condivisa in cloud per il codice, ma molto più potente: ricorda ogni modifica, chi l'ha fatta e quando. Se qualcosa si rompe, si torna indietro con un clic. Se lavori in team, ognuno può lavorare sulla propria copia senza sovrascrivere quella degli altri.</div>
+
+            <div class="interno-only">
+              <div class="term-section-label">Contesto A2A — vibecoding con Claude Code</div>
+              <div class="term-text">Nel vibecoding con Claude Code, un repository Git permette di tenere traccia delle versioni dei cruscotti, del dizionario e di tutto il workspace. Se una modifica di Claude rompe qualcosa, si ripristina la versione precedente in un comando. GitHub permette anche di condividere il codice con collaboratori o consulenti esterni.</div>
+            </div>
+
+            <div class="term-section-label">Chi usa questo termine</div>
+            <div class="term-text">Sviluppatori software, team tecnici, chiunque faccia vibecoding con strumenti come Claude Code o Cursor, DevOps, project manager tecnici.</div>
+
+            <div class="term-section-label">Quando viene usato</div>
+            <div class="term-text">Quando si parla di versionamento del codice, collaborazione su progetti tecnici, backup di sorgenti, deploy automatici o storia delle modifiche di un progetto.</div>
+
+            <div class="term-section-label">Come si scrive</div>
+            <div class="scrittura-row">
+              <span class="scrittura-ok">repository</span>
+              <span class="scrittura-sep">·</span>
+              <span style="font-size:0.82rem;color:var(--grigio-testo)">abbreviato <strong>repo</strong> nel parlato tecnico (invariabile)</span>
+            </div>
+
+            <div class="term-section-label">Pronuncia</div>
+            <div class="term-text">In italiano: <strong>ri-pò-zi-to-ri</strong>. In inglese: <strong>rɪˈpɒzɪt(ə)ri</strong> (accento sulla seconda sillaba). L'abbreviazione <em>repo</em> si pronuncia <strong>rì-po</strong> sia in italiano che in inglese.</div>
+
+            <div class="term-section-label">5 frasi per memorizzarla</div>
+            <ul class="frasi-list">
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Ogni progetto che tocca Claude Code finisce in un repository: se qualcosa va storto, torno alla versione precedente in un secondo."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Il repository è la memoria storica del progetto — senza di lui, ogni aggiornamento è un atto di fede."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Quando consegno un progetto a un cliente tecnico, gli do accesso al repository: può vedere ogni modifica, quando è stata fatta e perché."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Git è il sistema di versionamento più diffuso al mondo; GitHub e GitLab sono le piattaforme cloud dove i repository vengono ospitati e condivisi."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Un repository contiene tutta la storia del codice tramite 'commit' — istantanee del progetto salvate ad ogni cambiamento significativo."</li>
+            </ul>
+
+            <div class="term-section-label">Termini correlati</div>
+            <div class="correlati-list">
+              <a href="#term-backend" class="correlato">Backend</a>
+              <a href="#term-vibecoding" class="correlato">vibecoding</a>
+              <a href="#term-database" class="correlato">Database</a>
+            </div>
+
+            <div class="term-section-label">Connessioni</div>
+            <div class="connessioni-grid">
+              <div class="conn-item"><span class="conn-label">Chi</span><span class="conn-val">Sviluppatori, team tecnici, vibecoder con Claude Code / Cursor</span></div>
+              <div class="conn-item"><span class="conn-label">Cosa</span><span class="conn-val">Archivio versionato del codice sorgente con storia completa delle modifiche</span></div>
+              <div class="conn-item"><span class="conn-label">Come</span><span class="conn-val">Git (locale), GitHub / GitLab (cloud) — comandi: commit, push, pull, branch</span></div>
+              <div class="conn-item"><span class="conn-label">Quando</span><span class="conn-val">Ad ogni modifica significativa del codice, deploy, collaborazione in team</span></div>
+              <div class="conn-item"><span class="conn-label">Dove</span><span class="conn-val">Localmente sul Mac, in cloud su GitHub.com o GitLab.com</span></div>
+              <div class="conn-item"><span class="conn-label">Perché</span><span class="conn-val">Sicurezza, versionamento, collaborazione, backup e storia del progetto</span></div>
+            </div>
+
+            <button class="print-btn" onclick="printCard('term-repository')" aria-label="Stampa scheda repository">🖨 Stampa scheda</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- /R -->
+
+    <!-- ===== S ===== -->
+    <div class="letter-section" data-letter="S" id="lettera-S">
+      <button class="letter-toggle" aria-expanded="true" aria-controls="content-S" onclick="toggleLetter('S', this)">
+        <span class="toggle-letter" aria-hidden="true">S</span>
+        <span>1 termine</span>
+        <span class="toggle-count" id="count-S">1</span>
+        <span class="toggle-arrow" aria-hidden="true">▼</span>
+      </button>
+      <div class="letter-content open" id="content-S">
+
+        <div class="term-card" id="term-supabase" data-term="supabase database postgresql cloud backend open source firebase alternativa autenticazione API storage tabelle" data-letter="S">
+          <div class="term-header">
+            <span class="term-sigla">Supabase</span>
+            <span class="term-esteso">database cloud open source · alternativa a Firebase</span>
+          </div>
+          <button class="quiz-reveal-btn" onclick="revealCard('term-supabase')" aria-label="Rivela contenuto scheda Supabase">▼ Rivela risposta</button>
+          <div class="term-quiz-content">
+
+            <div class="term-section-label">Significato</div>
+            <div class="term-text">Piattaforma cloud open source che fornisce un database PostgreSQL pronto all'uso con API REST automatiche, autenticazione utenti, storage file e funzioni serverless — senza configurare server. È l'alternativa open source a Firebase di Google.</div>
+
+            <div class="term-section-label">Spiegazione semplice</div>
+            <div class="term-text">È come avere un database pronto in 2 minuti, con un pannello admin visivo, API già pronte per leggere e scrivere dati, e login utenti già integrato — senza installare nulla sul computer. Crei il progetto online, e il database è subito accessibile dall'app.</div>
+
+            <div class="interno-only">
+              <div class="term-section-label">Contesto A2A — vibecoding con dati persistenti</div>
+              <div class="term-text">Nel vibecoding, Supabase risolve il problema della persistenza dei dati: un HTML statico salva in localStorage (solo nel browser locale), ma con Supabase i dati vivono su un server cloud e sono accessibili da qualsiasi dispositivo — iPhone, Mac, tablet. Usato per cruscotti condivisi, form di contatto, registrazioni a eventi.</div>
+            </div>
+
+            <div class="term-section-label">Chi usa questo termine</div>
+            <div class="term-text">Sviluppatori web, vibecoder, startup che costruiscono MVP velocemente, chiunque abbia bisogno di un backend con database senza gestire server.</div>
+
+            <div class="term-section-label">Quando viene usato</div>
+            <div class="term-text">Quando un progetto web ha bisogno di salvare dati in modo permanente (non solo nel browser), di autenticazione utenti, o di condividere dati tra dispositivi diversi.</div>
+
+            <div class="term-section-label">Come si scrive</div>
+            <div class="scrittura-row">
+              <span class="scrittura-sbagliato">supabase</span>
+              <span class="scrittura-sep">→ minuscolo (è un nome proprio)</span>
+              <span class="scrittura-ok">Supabase</span>
+              <span class="scrittura-sep">·</span>
+              <span style="font-size:0.82rem;color:var(--grigio-testo)">S maiuscola, resto minuscolo</span>
+            </div>
+
+            <div class="term-section-label">Pronuncia</div>
+            <div class="term-text">In italiano: <strong>sù-pa-beis</strong>. In inglese: <strong>ˈsuːpəbeɪs</strong>. Il nome deriva da "supa" (intensificativo informale di "super") + "base" (database).</div>
+
+            <div class="term-section-label">5 frasi per memorizzarla</div>
+            <ul class="frasi-list">
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Con Supabase posso costruire un form di registrazione per una fiera che salva i dati online — senza server, senza backend separato, senza costi fissi."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"La differenza tra localStorage e Supabase: il primo salva solo sul tuo browser, il secondo salva nel cloud e lo vedi da qualsiasi dispositivo."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Supabase ha un piano gratuito generoso: per i progetti piccoli di A2A non ho mai pagato nulla."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Supabase si basa su PostgreSQL — il database relazionale open source più affidabile al mondo — e lo rende accessibile tramite API REST senza scrivere SQL."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Il pannello admin di Supabase mostra le tabelle del database come un foglio Excel: puoi vedere, aggiungere e modificare dati senza toccare il codice."</li>
+            </ul>
+
+            <div class="term-section-label">Termini correlati</div>
+            <div class="correlati-list">
+              <a href="#term-database" class="correlato">database</a>
+              <a href="#term-backend" class="correlato">backend</a>
+              <a href="#term-api" class="correlato">API</a>
+              <a href="#term-vercel" class="correlato">Vercel</a>
+            </div>
+
+            <div class="term-section-label">Connessioni</div>
+            <div class="connessioni-grid">
+              <div class="conn-item"><span class="conn-label">Chi</span><span class="conn-val">Sviluppatori, vibecoder, startup, chiunque abbia bisogno di dati persistenti nel cloud</span></div>
+              <div class="conn-item"><span class="conn-label">Cosa</span><span class="conn-val">Database PostgreSQL cloud + API REST + autenticazione + storage — tutto in uno</span></div>
+              <div class="conn-item"><span class="conn-label">Come</span><span class="conn-val">Dashboard web, SDK JavaScript, API REST automatiche, integrazione con Vercel</span></div>
+              <div class="conn-item"><span class="conn-label">Quando</span><span class="conn-val">Ogni volta che l'app deve salvare dati accessibili da più dispositivi o utenti</span></div>
+              <div class="conn-item"><span class="conn-label">Dove</span><span class="conn-val">supabase.com — piano gratuito disponibile, server in EU selezionabile</span></div>
+              <div class="conn-item"><span class="conn-label">Perché</span><span class="conn-val">Backend con database pronto in 2 minuti, senza server da gestire, open source</span></div>
+            </div>
+
+            <div class="eaa-badge">♿ Collegamento EAA</div>
+            <div class="term-text">Come ogni database, Supabase è il punto dove si archiviano i contenuti dei siti. Se le tabelle non prevedono campi per testi alternativi, descrizioni linguistiche e attributi di accessibilità, il sito che legge quei dati non potrà mai essere conforme WCAG — indipendentemente dalla qualità del frontend.</div>
+
+            <button class="print-btn" onclick="printCard('term-supabase')" aria-label="Stampa scheda Supabase">🖨 Stampa scheda</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- /S -->
+
+    <!-- ===== T ===== -->
+    <div class="letter-section" data-letter="T" id="lettera-T">
+      <button class="letter-toggle" aria-expanded="true" aria-controls="content-T" onclick="toggleLetter('T', this)">
+        <span class="toggle-letter" aria-hidden="true">T</span>
+        <span>1 termine</span>
+        <span class="toggle-count" id="count-T">1</span>
+        <span class="toggle-arrow" aria-hidden="true">▼</span>
+      </button>
+      <div class="letter-content open" id="content-T">
+
+        <div class="term-card" id="term-token" data-term="token unità testo AI modello linguaggio LLM ChatGPT Claude Groq costo prompt risposta conteggio context window" data-letter="T">
+          <div class="term-header">
+            <span class="term-sigla">token</span>
+            <span class="term-esteso">unità di testo per i modelli AI</span>
+          </div>
+          <button class="quiz-reveal-btn" onclick="revealCard('term-token')" aria-label="Rivela contenuto scheda token">▼ Rivela risposta</button>
+          <div class="term-quiz-content">
+
+            <div class="term-section-label">Significato</div>
+            <div class="term-text">Unità base con cui i modelli di linguaggio AI (LLM) leggono e generano testo. Un token corrisponde approssimativamente a ¾ di una parola in inglese o circa ½ parola in italiano. Il consumo di ogni interazione con l'AI si misura in token.</div>
+
+            <div class="term-section-label">Spiegazione semplice</div>
+            <div class="term-text">Sono come le monete di un videogioco: ogni parola che scrivi all'AI e ogni parola che l'AI ti risponde "consuma" alcuni token. I provider AI (OpenAI, Groq, Anthropic) misurano e fanno pagare per token — i piani gratuiti hanno un tetto massimo giornaliero o mensile.</div>
+
+            <div class="interno-only">
+              <div class="term-section-label">Contesto A2A — Groq e Claude</div>
+              <div class="term-text">Nel lavoro di Beatrice con Claude Code (Anthropic) e Groq, i token determinano quanto si può fare con il piano gratuito prima di superare il limite. Monitorare i token usati permette di ottimizzare i prompt, scegliere il modello giusto e pianificare i costi di scala.</div>
+            </div>
+
+            <div class="term-section-label">Chi usa questo termine</div>
+            <div class="term-text">Chiunque usi strumenti AI (ChatGPT, Claude, Groq, Gemini), sviluppatori che integrano API AI, responsabili di prodotto che calcolano i costi di scaling AI.</div>
+
+            <div class="term-section-label">Quando viene usato</div>
+            <div class="term-text">Quando si parla di costi AI, limiti dei piani, lunghezza dei prompt, context window, o ottimizzazione delle richieste a un modello linguistico.</div>
+
+            <div class="term-section-label">Come si scrive</div>
+            <div class="scrittura-row">
+              <span class="scrittura-ok">token</span>
+              <span class="scrittura-sep">·</span>
+              <span style="font-size:0.82rem;color:var(--grigio-testo)">invariabile in italiano: <strong>un token</strong>, <strong>i token</strong> (non "tokens")</span>
+            </div>
+
+            <div class="term-section-label">Pronuncia</div>
+            <div class="term-text">In italiano si pronuncia all'inglese: <strong>tò-ken</strong>. In inglese: <strong>ˈtoʊkən</strong>. Non esiste una traduzione italiana standard nel contesto AI.</div>
+
+            <div class="term-section-label">5 frasi per memorizzarla</div>
+            <ul class="frasi-list">
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Quando scrivo un prompt lungo a Claude, sto usando centinaia di token in un colpo solo — tengo d'occhio il contatore."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Groq ha un piano gratuito molto generoso in token al giorno: perfetto per testare senza costi."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Ottimizzare i prompt significa ridurre i token senza perdere qualità — è una competenza reale nel lavoro con l'AI."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"GPT-4 elabora massimo 128.000 token per conversazione (la 'context window'): oltre quel limite, inizia a dimenticare le parti più vecchie del dialogo."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Il costo delle API AI si misura in token: input (prompt) + output (risposta) = token totali consumati o fatturati."</li>
+            </ul>
+
+            <div class="term-section-label">Termini correlati</div>
+            <div class="correlati-list">
+              <a href="#term-api" class="correlato">API</a>
+              <a href="#term-vibecoding" class="correlato">vibecoding</a>
+              <span class="correlato-pending">LLM</span>
+              <span class="correlato-pending">prompt</span>
+            </div>
+
+            <div class="term-section-label">Connessioni</div>
+            <div class="connessioni-grid">
+              <div class="conn-item"><span class="conn-label">Chi</span><span class="conn-val">Utenti AI, sviluppatori, responsabili di budget tech</span></div>
+              <div class="conn-item"><span class="conn-label">Cosa</span><span class="conn-val">Unità di misura del testo per LLM — circa ¾ parola inglese o ½ italiana</span></div>
+              <div class="conn-item"><span class="conn-label">Come</span><span class="conn-val">Conteggio automatico da parte del modello AI ad ogni richiesta</span></div>
+              <div class="conn-item"><span class="conn-label">Quando</span><span class="conn-val">Ad ogni prompt inviato e risposta ricevuta da un modello AI</span></div>
+              <div class="conn-item"><span class="conn-label">Dove</span><span class="conn-val">Log API, dashboard provider (OpenAI, Groq, Anthropic), hub di monitoraggio</span></div>
+              <div class="conn-item"><span class="conn-label">Perché</span><span class="conn-val">Misurare e controllare il consumo e il costo delle interazioni AI</span></div>
+            </div>
+
+            <button class="print-btn" onclick="printCard('term-token')" aria-label="Stampa scheda token">🖨 Stampa scheda</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- /T -->
+
+    <!-- ===== V ===== -->
+    <div class="letter-section" data-letter="V" id="lettera-V">
+      <button class="letter-toggle" aria-expanded="true" aria-controls="content-V" onclick="toggleLetter('V', this)">
+        <span class="toggle-letter" aria-hidden="true">V</span>
+        <span>3 termini</span>
+        <span class="toggle-count" id="count-V">3</span>
+        <span class="toggle-arrow" aria-hidden="true">▼</span>
+      </button>
+      <div class="letter-content open" id="content-V">
+
+        <div class="term-card" id="term-vibecoding" data-term="vibecoding vibe coding sviluppo AI assistito prompt cursor claude chatgpt github copilot no-code low-code" data-letter="V">
+          <div class="term-header">
+            <span class="term-sigla">vibecoding</span>
+            <span class="term-esteso">sviluppo software guidato dall'AI</span>
+          </div>
+          <button class="quiz-reveal-btn" onclick="revealCard('term-vibecoding')" aria-label="Rivela contenuto scheda vibecoding">▼ Rivela risposta</button>
+          <div class="term-quiz-content">
+
+            <div class="term-section-label">Significato</div>
+            <div class="term-text">Pratica di sviluppo software dove si descrive all'AI cosa si vuole costruire — in linguaggio naturale — e il modello scrive il codice. Il programmatore guida con intenzioni ("vibe") invece di digitare manualmente ogni riga di codice.</div>
+
+            <div class="term-section-label">Spiegazione semplice</div>
+            <div class="term-text">È come essere l'architetto invece del muratore: descrivi la casa che vuoi, l'AI la costruisce. Puoi fare cose che prima richiedevano un developer — pagine web, dashboard, script — anche senza sapere programmare.</div>
+
+            <div class="interno-only">
+              <div class="term-section-label">Contesto A2A — uso nel lavoro di Beatrice</div>
+              <div class="term-text">Il vibecoding è il metodo con cui Beatrice costruisce i cruscotti HTML, le demo EAA, le landing page e questo stesso dizionario: descrive in italiano cosa serve, Claude scrive il codice, e si arriva a output funzionanti WCAG-compliant senza un team di sviluppo.</div>
+            </div>
+
+            <div class="term-section-label">Chi usa questo termine</div>
+            <div class="term-text">Fondatori, marketer, consulenti, CEO tech-savvy, designer — chiunque usi Claude, ChatGPT, Cursor o GitHub Copilot per costruire prodotti digitali senza scrivere codice da zero.</div>
+
+            <div class="term-section-label">Quando viene usato</div>
+            <div class="term-text">Quando si costruiscono prototipi, MVP, dashboard interne, landing page o strumenti personalizzati usando l'AI come partner di sviluppo.</div>
+
+            <div class="term-section-label">Come si scrive</div>
+            <div class="scrittura-row">
+              <span class="scrittura-sbagliato">vibe coding</span>
+              <span class="scrittura-sep">→ due parole (meno diffuso)</span>
+              <span class="scrittura-ok">vibecoding</span>
+              <span class="scrittura-sep">·</span>
+              <span style="font-size:0.82rem;color:var(--grigio-testo)">una sola parola, tutto minuscolo</span>
+            </div>
+
+            <div class="term-section-label">Pronuncia</div>
+            <div class="term-text">In italiano: <strong>vàib-còuding</strong>. Dall'inglese <em>vibe</em> (= atmosfera, <strong>vaɪb</strong>) + <em>coding</em> (= programmazione, <strong>ˈkoʊdɪŋ</strong>). Termine coniato nel 2025 da Andrej Karpathy.</div>
+
+            <div class="term-section-label">5 frasi per memorizzarla</div>
+            <ul class="frasi-list">
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Con il vibecoding ho costruito il nostro hub operativo, i cruscotti e le demo EAA — senza assumere un developer."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Non è magia: è un metodo. Descrivi in modo preciso, valida il risultato, correggi con feedback — come un direttore creativo con un team."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Il vibecoding mi ha dato superpotere operativo: prototipo in ore quello che prima richiedeva settimane e un budget."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Il vibecoding non elimina la necessità di capire il codice — ma abbassa enormemente la barriera di ingresso allo sviluppo software."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Strumenti come Claude Code, Cursor e GitHub Copilot sono i tool principali del vibecoding professionale nel 2025."</li>
+            </ul>
+
+            <div class="term-section-label">Termini correlati</div>
+            <div class="correlati-list">
+              <a href="#term-frontend" class="correlato">Frontend</a>
+              <a href="#term-backend" class="correlato">Backend</a>
+              <a href="#term-api" class="correlato">API</a>
+              <a href="#term-token" class="correlato">Token</a>
+            </div>
+
+            <div class="term-section-label">Connessioni</div>
+            <div class="connessioni-grid">
+              <div class="conn-item"><span class="conn-label">Chi</span><span class="conn-val">Fondatori, marketer, consulenti, CEO tech-savvy — non tradizionalmente sviluppatori</span></div>
+              <div class="conn-item"><span class="conn-label">Cosa</span><span class="conn-val">Descrizioni in linguaggio naturale → codice funzionante generato da AI</span></div>
+              <div class="conn-item"><span class="conn-label">Come</span><span class="conn-val">Claude Code, Cursor, ChatGPT, GitHub Copilot, Windsurf</span></div>
+              <div class="conn-item"><span class="conn-label">Quando</span><span class="conn-val">Prototipazione, MVP, dashboard interne, automazioni, demo cliente</span></div>
+              <div class="conn-item"><span class="conn-label">Dove</span><span class="conn-val">IDE (Cursor), terminale (Claude Code), browser (ChatGPT, Claude.ai)</span></div>
+              <div class="conn-item"><span class="conn-label">Perché</span><span class="conn-val">Costruire prodotti digitali senza team di sviluppo, velocemente e a basso costo</span></div>
+            </div>
+
+            <button class="print-btn" onclick="printCard('term-vibecoding')" aria-label="Stampa scheda vibecoding">🖨 Stampa scheda</button>
+          </div>
+        </div>
+
+        <div class="term-card" id="term-vpn" data-term="vpn virtual private network rete privata virtuale cifratura sicurezza privacy internet ip nascondere connessione" data-letter="V">
+          <div class="term-header">
+            <span class="term-sigla">VPN</span>
+            <span class="term-esteso">Virtual Private Network · rete privata virtuale</span>
+          </div>
+          <button class="quiz-reveal-btn" onclick="revealCard('term-vpn')" aria-label="Rivela contenuto scheda VPN">▼ Rivela risposta</button>
+          <div class="term-quiz-content">
+
+            <div class="term-section-label">Significato</div>
+            <div class="term-text">Tecnologia che crea un tunnel cifrato tra il dispositivo dell'utente e Internet, mascherando l'indirizzo IP reale e proteggendo i dati trasmessi da intercettazioni esterne.</div>
+
+            <div class="term-section-label">Spiegazione semplice</div>
+            <div class="term-text">È come spedire una lettera in una busta blindata e invisibile, invece che su una cartolina leggibile da tutti. Il tuo indirizzo IP reale viene nascosto — chi intercetta la connessione non sa chi sei né cosa stai facendo online.</div>
+
+            <div class="interno-only">
+              <div class="term-section-label">Contesto A2A — uso pratico</div>
+              <div class="term-text">Nel lavoro di accessibilità, la VPN è utile per testare siti da diverse location geografiche (es. verificare se un sito si comporta diversamente in altri Paesi EAA), per connessioni sicure da reti pubbliche, o per accedere a sistemi aziendali da remoto.</div>
+            </div>
+
+            <div class="term-section-label">Chi usa questo termine</div>
+            <div class="term-text">Professionisti digitali, nomadi digitali, aziende con team remoto, consulenti IT, chiunque si connetta da reti pubbliche (bar, aeroporti, hotel).</div>
+
+            <div class="term-section-label">Quando viene usato</div>
+            <div class="term-text">Quando si parla di sicurezza informatica, connessioni remote aziendali, protezione dei dati su reti pubbliche, o test geografici di siti web.</div>
+
+            <div class="term-section-label">Come si scrive</div>
+            <div class="scrittura-row">
+              <span class="scrittura-sbagliato">vpn</span>
+              <span class="scrittura-sep">→ minuscolo</span>
+              <span class="scrittura-ok">VPN</span>
+              <span class="scrittura-sep">·</span>
+              <span style="font-size:0.82rem;color:var(--grigio-testo)">sempre tutto maiuscolo, è una sigla</span>
+            </div>
+
+            <div class="term-section-label">Pronuncia</div>
+            <div class="term-text">In italiano lettera per lettera: <strong>vu-pi-enne</strong>. In inglese identica: <strong>viː-piː-ɛn</strong>.</div>
+
+            <div class="term-section-label">5 frasi per memorizzarla</div>
+            <ul class="frasi-list">
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Quando mi connetto al Wi-Fi di un hotel o di un aeroporto, attivo sempre la VPN prima di qualsiasi altra cosa."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Ho usato la VPN per testare il sito di un cliente da una simulazione UK — e ho trovato un redirect che rompeva l'accessibilità della versione inglese."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Una VPN aziendale non è un optional: è la prima linea di difesa quando si lavora da remoto con dati sensibili dei clienti."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Una VPN cifra tutto il traffico tra il tuo dispositivo e il server VPN: le reti locali vedono solo dati illeggibili."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"I provider VPN più diffusi nel 2025 sono NordVPN, ExpressVPN e ProtonVPN (open source, basato in Svizzera)."</li>
+            </ul>
+
+            <div class="term-section-label">Termini correlati</div>
+            <div class="correlati-list">
+              <a href="#term-api" class="correlato">API</a>
+              <span class="correlato-pending">Firewall</span>
+              <span class="correlato-pending">HTTPS</span>
+            </div>
+
+            <div class="term-section-label">Connessioni</div>
+            <div class="connessioni-grid">
+              <div class="conn-item"><span class="conn-label">Chi</span><span class="conn-val">Professionisti digitali, aziende con team remoto, consulenti, viaggiatori</span></div>
+              <div class="conn-item"><span class="conn-label">Cosa</span><span class="conn-val">Tunnel cifrato, IP mascherato, traffico protetto da intercettazioni</span></div>
+              <div class="conn-item"><span class="conn-label">Come</span><span class="conn-val">App VPN (NordVPN, ProtonVPN), protocolli OpenVPN / WireGuard</span></div>
+              <div class="conn-item"><span class="conn-label">Quando</span><span class="conn-val">Reti pubbliche, lavoro remoto, test geografici siti web</span></div>
+              <div class="conn-item"><span class="conn-label">Dove</span><span class="conn-val">Su tutti i dispositivi (Mac, iPhone, iPad) — si attiva con un tap</span></div>
+              <div class="conn-item"><span class="conn-label">Perché</span><span class="conn-val">Proteggere la privacy, cifrare i dati, accedere a sistemi aziendali da remoto</span></div>
+            </div>
+
+            <button class="print-btn" onclick="printCard('term-vpn')" aria-label="Stampa scheda VPN">🖨 Stampa scheda</button>
+          </div>
+        </div>
+
+        <div class="term-card" id="term-vercel" data-term="vercel deploy deployment hosting pubblicare online frontend serverless edge" data-letter="V">
+          <div class="term-header">
+            <span class="term-sigla">Vercel</span>
+            <span class="term-esteso">piattaforma per pubblicare siti online</span>
+          </div>
+          <button class="quiz-reveal-btn" onclick="revealCard('term-vercel')" aria-label="Rivela contenuto scheda Vercel">▼ Rivela risposta</button>
+          <div class="term-quiz-content">
+
+            <div class="term-section-label">Significato</div>
+            <div class="term-text">Piattaforma cloud che pubblica automaticamente siti web e applicazioni online. Collegata a GitHub: ogni volta che aggiorni il codice, Vercel lo prende, lo compila e lo mette in produzione in pochi secondi.</div>
+
+            <div class="term-section-label">Spiegazione semplice</div>
+            <div class="term-text">È il "pubblicatore automatico": scrivi il codice su GitHub, premi invio, e il sito è già online. Niente server da configurare, niente FTP, niente file da caricare a mano. Il piano gratuito copre la maggior parte dei progetti personali e di avvio.</div>
+
+            <div class="interno-only">
+              <div class="term-section-label">Contesto A2A — uso nel lavoro di Beatrice</div>
+              <div class="term-text">Vercel è la destinazione naturale dei progetti vibecoding costruiti con Claude: una volta che il codice è su GitHub, il deploy su Vercel è automatico. Utile per pubblicare demo EAA, landing page di conformità o cruscotti accessibili direttamente a un URL pubblico — senza dover gestire server.</div>
+            </div>
+
+            <div class="term-section-label">Chi lo usa</div>
+            <div class="term-text">Developer frontend, startupper, team che lavorano con React/Next.js, e chi fa vibecoding — chiunque voglia pubblicare siti senza occuparsi di infrastrutture.</div>
+
+            <div class="term-section-label">Quando si usa</div>
+            <div class="term-text">Quando un progetto è pronto per essere condiviso online: si collega il repository GitHub a Vercel e ogni push aggiorna il sito in automatico. Ideale per prototipi, MVP, siti statici e app Next.js.</div>
+
+            <div class="term-section-label">Come si scrive</div>
+            <div class="term-text">
+              <span class="scrittura-ok">Vercel</span> (con la V maiuscola, è un nome proprio)
+              <br><span class="scrittura-no">vercel</span> (accettabile in contesti tecnici, es. comandi da terminale)
+            </div>
+
+            <div class="term-section-label">Pronuncia</div>
+            <div class="term-text">🇮🇹 <strong>VÈR-sel</strong> — come si legge, senza accentuazioni strane. Origine: probabilmente da "versatile".</div>
+
+            <div class="term-section-label">5 frasi d'uso</div>
+            <ul class="frasi-lista">
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Ho collegato il repository GitHub a Vercel e in due minuti la demo EAA era già online con il suo URL."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Ogni volta che modifico il codice su Cursor, Vercel lo pubblica automaticamente — zero operazioni manuali."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Con il piano free di Vercel puoi pubblicare fino a 100 siti: perfetto per le demo da mostrare ai clienti."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Vercel offre HTTPS gratuito e CDN globale: il sito si carica veloce ovunque nel mondo."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"Vercel è nata per Next.js (ne è anche la creatrice), ma supporta qualsiasi framework frontend moderno."</li>
+            </ul>
+
+            <div class="term-section-label">Termini correlati</div>
+            <div class="term-tags">
+              <span class="tag-correlato" onclick="searchTerm('GitHub')">GitHub</span>
+              <span class="tag-correlato" onclick="searchTerm('repository')">repository</span>
+              <span class="tag-correlato" onclick="searchTerm('frontend')">frontend</span>
+              <span class="tag-correlato" onclick="searchTerm('vibecoding')">vibecoding</span>
+            </div>
+
+            <div class="connessioni-grid">
+              <div class="conn-item"><span class="conn-label">Input</span><span class="conn-val">Codice su GitHub (push)</span></div>
+              <div class="conn-item"><span class="conn-label">Output</span><span class="conn-val">Sito online con URL pubblico + HTTPS</span></div>
+              <div class="conn-item"><span class="conn-label">Alternativa</span><span class="conn-val">Netlify, GitHub Pages, Cloudflare Pages</span></div>
+              <div class="conn-item"><span class="conn-label">Come</span><span class="conn-val">vercel.com → importa da GitHub → deploy automatico</span></div>
+            </div>
+
+            <button class="print-btn" onclick="printCard('term-vercel')" aria-label="Stampa scheda Vercel">🖨 Stampa scheda</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- /V -->
+
+    <!-- ===== W ===== -->
+    <div class="letter-section" data-letter="W" id="lettera-W">
+      <button class="letter-toggle" aria-expanded="true" aria-controls="content-W" onclick="toggleLetter('W', this)">
+        <span class="toggle-letter" aria-hidden="true">W</span>
+        <span>1 termine</span>
+        <span class="toggle-count" id="count-W">1</span>
+        <span class="toggle-arrow" aria-hidden="true">▼</span>
+      </button>
+      <div class="letter-content open" id="content-W">
+
+        <div class="term-card" id="term-wcag" data-term="wcag web content accessibility guidelines linee guida accessibilità w3c livello AA AA AAA contrasto heading aria screen reader" data-letter="W">
+          <div class="term-header">
+            <span class="term-sigla">WCAG</span>
+            <span class="term-esteso">Web Content Accessibility Guidelines · Linee Guida per l'Accessibilità dei Contenuti Web</span>
+          </div>
+          <button class="quiz-reveal-btn" onclick="revealCard('term-wcag')" aria-label="Rivela contenuto scheda WCAG">▼ Rivela risposta</button>
+          <div class="term-quiz-content">
+
+            <div class="term-section-label">Significato</div>
+            <div class="term-text">Standard internazionale pubblicato dal W3C (World Wide Web Consortium) che definisce i requisiti tecnici per rendere i contenuti web accessibili a persone con disabilità visive, uditive, motorie e cognitive. La versione di riferimento per l'EAA è <strong>WCAG 2.1 livello AA</strong>.</div>
+
+            <div class="term-section-label">Spiegazione semplice</div>
+            <div class="term-text">È il "codice di costruzione" dell'accessibilità web: una lista di criteri tecnici che un sito deve rispettare per essere usabile da tutti. Come il codice edilizio per gli edifici fisici, ma per i siti web. Il livello AA è quello obbligatorio per legge (EAA).</div>
+
+            <div class="interno-only">
+              <div class="term-section-label">Contesto A2A — il cuore tecnico del lavoro</div>
+              <div class="term-text">Le WCAG 2.1 AA sono lo standard tecnico su cui si basa tutto il lavoro di audit di AccessibilityToAll. Beatrice verifica criterio per criterio: contrasto colori (1.4.3), testi alternativi (1.1.1), navigazione da tastiera (2.1.1), etichette form (1.3.1), heading strutturati (1.3.1). Ogni output visivo — cruscotti, demo, landing page — deve rispettare queste linee guida.</div>
+            </div>
+
+            <div class="term-section-label">Chi usa questo termine</div>
+            <div class="term-text">Consulenti di accessibilità, sviluppatori web, UX designer, responsabili di conformità, avvocati specializzati in compliance digitale, titolari di siti con obbligo EAA.</div>
+
+            <div class="term-section-label">Quando viene usato</div>
+            <div class="term-text">Quando si parla di audit di accessibilità, dichiarazione di conformità, correzione di barriere, formazione sul design inclusivo, o verifica di un sito rispetto agli obblighi EAA.</div>
+
+            <div class="term-section-label">Come si scrive</div>
+            <div class="scrittura-row">
+              <span class="scrittura-sbagliato">wcag</span>
+              <span class="scrittura-sep">→ minuscolo</span>
+              <span class="scrittura-ok">WCAG</span>
+              <span class="scrittura-sep">·</span>
+              <span style="font-size:0.82rem;color:var(--grigio-testo)">sempre tutto maiuscolo; i livelli si scrivono <strong>A</strong>, <strong>AA</strong>, <strong>AAA</strong></span>
+            </div>
+
+            <div class="term-section-label">Pronuncia</div>
+            <div class="term-text">In italiano lettera per lettera: <strong>W-C-A-G</strong> (<em>doppiavu-ci-a-gi</em>). In inglese: <strong>dʌb(ə)ljuː-siː-eɪ-dʒiː</strong>. Alcune persone pronunciano come parola: <em>"wee-kag"</em> — meno formale ma diffuso.</div>
+
+            <div class="term-section-label">5 frasi per memorizzarla</div>
+            <ul class="frasi-list">
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"WCAG 2.1 AA non è un'opinione: è uno standard misurabile. Ogni criterio ha un test, ogni test ha un risultato: pass o fail."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Il criterio più fallito in tutti gli audit che faccio? Il contrasto colori (1.4.3): testi grigi su sfondo bianco, ovunque."</li>
+              <li class="beatrice"><span class="frase-tag">Beatrice</span>"Le WCAG hanno 78 criteri di successo al livello AA. In un audit di 2 ore verifico i 20 che contano di più per il tipo di sito."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"WCAG si organizza in 4 principi: Percepibile, Utilizzabile, Comprensibile, Robusto (POUR) — ogni criterio appartiene a uno di questi."</li>
+              <li class="neutrale"><span class="frase-tag">Neutrale</span>"WCAG 2.2 (2023) ha aggiunto nuovi criteri come 'Focus Visible Enhanced' e 'Target Size' — ma l'EAA fa ancora riferimento a WCAG 2.1."</li>
+            </ul>
+
+            <div class="term-section-label">Termini correlati</div>
+            <div class="correlati-list">
+              <a href="#term-eaa" class="correlato">EAA</a>
+              <a href="#term-frontend" class="correlato">Frontend</a>
+              <a href="#term-backend" class="correlato">Backend</a>
+              <a href="#term-cms" class="correlato">CMS</a>
+            </div>
+
+            <div class="term-section-label">Connessioni</div>
+            <div class="connessioni-grid">
+              <div class="conn-item"><span class="conn-label">Chi</span><span class="conn-val">Consulenti accessibilità, sviluppatori, UX designer, responsabili compliance EAA</span></div>
+              <div class="conn-item"><span class="conn-label">Cosa</span><span class="conn-val">78 criteri tecnici (livello AA) per rendere il web accessibile a persone con disabilità</span></div>
+              <div class="conn-item"><span class="conn-label">Come</span><span class="conn-val">Test manuali, tool automatici (axe, WAVE, Lighthouse), screen reader</span></div>
+              <div class="conn-item"><span class="conn-label">Quando</span><span class="conn-val">Audit pre-lancio, compliance EAA, redesign, onboarding nuovo sito o CMS</span></div>
+              <div class="conn-item"><span class="conn-label">Dove</span><span class="conn-val">w3.org/WAI/standards-guidelines/wcag — documento ufficiale pubblico e gratuito</span></div>
+              <div class="conn-item"><span class="conn-label">Perché</span><span class="conn-val">Rendere il web usabile da tutti, rispettare gli obblighi EAA, evitare sanzioni legali</span></div>
+            </div>
+
+            <div class="eaa-badge">♿ Fondamento tecnico dell'EAA</div>
+            <div class="term-text">Le WCAG 2.1 AA sono lo standard tecnico di riferimento dell'EAA. La conformità si dimostra verificando i criteri WCAG e producendo una dichiarazione di accessibilità — il documento legale che attesta la conformità al D.Lgs. 82/2022.</div>
+
+            <button class="print-btn" onclick="printCard('term-wcag')" aria-label="Stampa scheda WCAG">🖨 Stampa scheda</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- /W -->
+
+  </div><!-- /dizionario -->
+
+  <div id="noResults" role="status" aria-live="polite">
+    Nessun termine trovato per "<span id="searchTerm"></span>".
+  </div>
+
+</main>
+
+<footer>
+  AccessibilityToAll SRL · WCAG 2.1 AA
+</footer>
+
+<script>
+  // ── DATA AUTO-AGGIORNAMENTO ──
+  const mesi = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+  const oggi = new Date();
+  document.getElementById('hdr-date').textContent =
+    oggi.getDate() + ' ' + mesi[oggi.getMonth()] + ' ' + oggi.getFullYear();
+
+  // ── CONTATORE TOTALE VOCI ──
+  const totale = document.querySelectorAll('.term-card').length;
+  document.getElementById('total-count').textContent =
+    totale + (totale === 1 ? ' termine nel dizionario' : ' termini nel dizionario');
+
+  // ── NAVIGA PER LETTERA ──
+  const allLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const activeLetters = new Set();
+  document.querySelectorAll('.letter-section').forEach(s => activeLetters.add(s.dataset.letter));
+  const nav = document.querySelector('.letter-nav');
+  allLetters.forEach(l => {
+    const pill = document.createElement('a');
+    pill.className = 'letter-pill' + (activeLetters.has(l) ? ' active' : '');
+    pill.textContent = l;
+    pill.setAttribute('aria-label', 'Lettera ' + l);
+    if (activeLetters.has(l)) {
+      pill.href = '#lettera-' + l;
+      pill.setAttribute('role', 'link');
+    } else {
+      pill.setAttribute('aria-disabled', 'true');
+    }
+    nav.appendChild(pill);
+  });
+
+  // ── TOGGLE LETTERA ──
+  function toggleLetter(letter, btn) {
+    const content = document.getElementById('content-' + letter);
+    const isOpen = content.classList.contains('open');
+    content.classList.toggle('open', !isOpen);
+    btn.setAttribute('aria-expanded', String(!isOpen));
+  }
+
+  // ── TOGGLE VISTA CLIENTE / INTERNA ──
+  function toggleVista() {
+    const body = document.body;
+    const btn = document.getElementById('vistaToggle');
+    const isCliente = body.classList.toggle('vista-cliente');
+    btn.classList.toggle('active', isCliente);
+    btn.setAttribute('aria-pressed', String(isCliente));
+    btn.textContent = isCliente ? '🏢 Vista interna' : '👤 Vista cliente';
+  }
+
+  // ── MODALITÀ QUIZ ──
+  function toggleQuiz() {
+    const body = document.body;
+    const btn = document.getElementById('quizToggle');
+    const isQuiz = body.classList.toggle('quiz-mode');
+    btn.classList.toggle('active', isQuiz);
+    btn.setAttribute('aria-pressed', String(isQuiz));
+    btn.textContent = isQuiz ? '✕ Esci dal quiz' : '🧠 Quiz';
+    if (isQuiz) {
+      document.querySelectorAll('.letter-content').forEach(c => c.classList.add('open'));
+      document.querySelectorAll('.letter-toggle').forEach(b => b.setAttribute('aria-expanded', 'true'));
+      document.querySelectorAll('.quiz-revealed').forEach(c => c.classList.remove('quiz-revealed'));
+    }
+  }
+
+  function revealCard(cardId) {
+    document.getElementById(cardId).classList.add('quiz-revealed');
+  }
+
+  // ── RICERCA ──
+  const searchInput = document.getElementById('searchInput');
+  const noResults = document.getElementById('noResults');
+  const searchTermSpan = document.getElementById('searchTerm');
+
+  searchInput.addEventListener('input', () => {
+    const query = searchInput.value.trim().toLowerCase();
+    let totalVisible = 0;
+    document.querySelectorAll('.letter-section').forEach(section => {
+      const cards = section.querySelectorAll('.term-card');
+      let sectionVisible = 0;
+      cards.forEach(card => {
+        const text = card.dataset.term || '';
+        const sigla = card.querySelector('.term-sigla')?.textContent.toLowerCase() || '';
+        const match = !query || text.includes(query) || sigla.includes(query);
+        card.classList.toggle('hidden', !match);
+        if (match) sectionVisible++;
+      });
+      const content = section.querySelector('.letter-content');
+      const btn = section.querySelector('.letter-toggle');
+      const count = section.querySelector('[id^="count-"]');
+      if (query && sectionVisible === 0) {
+        section.style.display = 'none';
+      } else {
+        section.style.display = '';
+        if (query && sectionVisible > 0) {
+          content.classList.add('open');
+          btn.setAttribute('aria-expanded', 'true');
+        }
+        if (count) count.textContent = sectionVisible;
+      }
+      totalVisible += sectionVisible;
+    });
+    noResults.style.display = totalVisible === 0 && query ? 'block' : 'none';
+    searchTermSpan.textContent = query;
+  });
+
+  // ── STAMPA TUTTO ──
+  function printAll() {
+    document.querySelectorAll('.letter-content').forEach(el => el.classList.add('open'));
+    document.querySelectorAll('.letter-toggle').forEach(b => b.setAttribute('aria-expanded', 'true'));
+    setTimeout(() => window.print(), 120);
+  }
+
+  // ── AGGIUNGI TERMINE ──
+  const DIZ_CUSTOM_KEY = 'diz_custom_terms';
+
+  function openAddTerm() {
+    document.getElementById('add-term-overlay').classList.add('open');
+    setTimeout(() => document.getElementById('at-sigla').focus(), 80);
+  }
+  function closeAddTerm() {
+    document.getElementById('add-term-overlay').classList.remove('open');
+    ['at-sigla','at-esteso','at-significato','at-spiegazione'].forEach(id =>
+      document.getElementById(id).value = ''
+    );
+  }
+  function saveAddTerm() {
+    const sigla = document.getElementById('at-sigla').value.trim();
+    const significato = document.getElementById('at-significato').value.trim();
+    if (!sigla || !significato) { alert('Sigla e Significato sono obbligatori.'); return; }
+    const custom = JSON.parse(localStorage.getItem(DIZ_CUSTOM_KEY) || '[]');
+    custom.push({
+      id: 'custom-' + sigla.toLowerCase().replace(/[^a-z0-9]/g,'') + '-' + Date.now(),
+      sigla,
+      esteso: document.getElementById('at-esteso').value.trim(),
+      significato,
+      spiegazione: document.getElementById('at-spiegazione').value.trim(),
+      letter: sigla[0].toUpperCase(),
+      data: new Date().toLocaleDateString('it')
+    });
+    localStorage.setItem(DIZ_CUSTOM_KEY, JSON.stringify(custom));
+    injectCustomTerms();
+    closeAddTerm();
+  }
+  function escDiz(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function deleteCustomTerm(id) {
+    if (!confirm('Eliminare questo termine personale?')) return;
+    const custom = JSON.parse(localStorage.getItem(DIZ_CUSTOM_KEY) || '[]').filter(t => t.id !== id);
+    localStorage.setItem(DIZ_CUSTOM_KEY, JSON.stringify(custom));
+    document.getElementById(id)?.remove();
+    aggiornaCounterTotale();
+  }
+  function aggiornaCounterTotale() {
+    const tot = document.querySelectorAll('.term-card').length;
+    document.getElementById('total-count').textContent = tot + (tot === 1 ? ' termine nel dizionario' : ' termini nel dizionario');
+  }
+  function injectCustomTerms() {
+    document.querySelectorAll('.term-card-custom').forEach(el => el.remove());
+    const custom = JSON.parse(localStorage.getItem(DIZ_CUSTOM_KEY) || '[]');
+    const diz = document.getElementById('dizionario');
+    custom.forEach(term => {
+      const letter = (term.letter || term.sigla[0]).toUpperCase();
+      let content = document.getElementById('content-' + letter);
+      if (!content) {
+        const section = document.createElement('div');
+        section.className = 'letter-section';
+        section.dataset.letter = letter;
+        section.id = 'lettera-' + letter;
+        section.innerHTML =
+          `<button class="letter-toggle" aria-expanded="true" aria-controls="content-${letter}" onclick="toggleLetter('${letter}', this)">
+            <span class="toggle-letter" aria-hidden="true">${letter}</span>
+            <span>0 termini</span>
+            <span class="toggle-count" id="count-${letter}">0</span>
+            <span class="toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="letter-content open" id="content-${letter}"></div>`;
+        const after = Array.from(diz.querySelectorAll('.letter-section')).find(s => s.dataset.letter > letter);
+        if (after) diz.insertBefore(section, after); else diz.appendChild(section);
+        content = document.getElementById('content-' + letter);
+      }
+      const card = document.createElement('div');
+      card.className = 'term-card term-card-custom';
+      card.id = term.id;
+      card.dataset.term = (term.sigla + ' ' + term.esteso + ' ' + term.significato).toLowerCase();
+      card.dataset.letter = letter;
+      card.innerHTML =
+        `<div class="term-header">
+          <span class="term-sigla">${escDiz(term.sigla)}</span>
+          ${term.esteso ? `<span class="term-esteso">${escDiz(term.esteso)}</span>` : ''}
+          <span class="custom-badge">🏷️ personale</span>
+        </div>
+        <div class="term-section-label">Significato</div>
+        <div class="term-text">${escDiz(term.significato)}</div>
+        ${term.spiegazione ? `<div class="term-section-label">Spiegazione semplice</div><div class="term-text">${escDiz(term.spiegazione)}</div>` : ''}
+        <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:.68rem;color:var(--grigio-testo);">Aggiunto il ${escDiz(term.data)}</span>
+          <button onclick="deleteCustomTerm('${term.id}')" style="font-size:.72rem;color:#DC2626;background:none;border:none;cursor:pointer;font-family:inherit;padding:0;">🗑 Elimina</button>
+        </div>`;
+      content.appendChild(card);
+    });
+    aggiornaCounterTotale();
+  }
+  injectCustomTerms();
+
+  // ── FLASHCARD ──
+  let fcAllTerms = [], fcTerms = [], fcIndex = 0, fcRevealed = false;
+
+  function startFlashcard() {
+    fcAllTerms = Array.from(document.querySelectorAll('.term-card')).map(card => {
+      const labels = card.querySelectorAll('.term-section-label');
+      const texts  = card.querySelectorAll('.term-section-label + .term-text');
+      let sig = '', spi = '';
+      labels.forEach((lbl, i) => {
+        const t = texts[i]?.textContent || '';
+        if (lbl.textContent.includes('Significato') && !lbl.textContent.includes('semplice') && !sig) sig = t;
+        if (lbl.textContent.includes('semplice') && !spi) spi = t;
+      });
+      return {
+        sigla:       card.querySelector('.term-sigla')?.textContent || '',
+        esteso:      card.querySelector('.term-esteso')?.textContent || '',
+        significato: sig,
+        spiegazione: spi,
+        letter:      card.dataset.letter || ''
+      };
+    }).filter(t => t.sigla && t.significato);
+    if (!fcAllTerms.length) return;
+    buildFcLetterFilter();
+    fcSetTerms(fcAllTerms);
+    document.getElementById('fc-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function exitFlashcard() {
+    document.getElementById('fc-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  function buildFcLetterFilter() {
+    const letters = [...new Set(fcAllTerms.map(t => t.letter).filter(Boolean))].sort();
+    document.getElementById('fc-letters').innerHTML =
+      `<button class="fc-letter-chip fc-active" onclick="fcFilterBy(null,this)">Tutti</button>` +
+      letters.map(l => `<button class="fc-letter-chip" onclick="fcFilterBy('${l}',this)">${l}</button>`).join('');
+  }
+  function fcFilterBy(letter, btn) {
+    document.querySelectorAll('.fc-letter-chip').forEach(b => b.classList.remove('fc-active'));
+    btn.classList.add('fc-active');
+    fcSetTerms(letter ? fcAllTerms.filter(t => t.letter === letter) : fcAllTerms);
+  }
+  function fcSetTerms(terms) { fcTerms = terms; fcIndex = 0; renderFcCard(); }
+  function renderFcCard() {
+    if (!fcTerms.length) return;
+    const t = fcTerms[fcIndex];
+    document.getElementById('fc-counter').textContent = (fcIndex + 1) + ' di ' + fcTerms.length;
+    document.getElementById('fc-sigla').textContent       = t.sigla;
+    document.getElementById('fc-esteso').textContent      = t.esteso;
+    document.getElementById('fc-significato').textContent = t.significato;
+    document.getElementById('fc-spiegazione').textContent = t.spiegazione;
+    fcRevealed = false;
+    document.getElementById('fc-front').style.display = 'block';
+    document.getElementById('fc-back').style.display  = 'none';
+    document.getElementById('fc-reveal-btn').style.display = '';
+  }
+  function fcReveal() {
+    if (fcRevealed) return;
+    fcRevealed = true;
+    document.getElementById('fc-front').style.display = 'none';
+    document.getElementById('fc-back').style.display  = 'block';
+    document.getElementById('fc-reveal-btn').style.display = 'none';
+  }
+  function fcNav(dir) {
+    fcIndex = (fcIndex + dir + fcTerms.length) % fcTerms.length;
+    renderFcCard();
+  }
+
+  // ── STAMPA SCHEDA ──
+  function printCard(cardId) {
+    const card = document.getElementById(cardId);
+    if (!card) return;
+    const clone = card.cloneNode(true);
+    clone.querySelectorAll('.print-btn, .quiz-reveal-btn').forEach(el => el.remove());
+    clone.querySelectorAll('.term-quiz-content').forEach(el => el.style.display = 'block');
+    clone.querySelectorAll('.interno-only').forEach(el => el.style.display = 'block');
+    const sigla = card.querySelector('.term-sigla')?.textContent || '';
+    const dataStr = oggi.getDate() + ' ' + mesi[oggi.getMonth()] + ' ' + oggi.getFullYear();
+    const win = window.open('', '_blank', 'width=820,height=940');
+    win.document.write(`<!DOCTYPE html>
+<html lang="it"><head><meta charset="UTF-8">
+<title>Dizionario A2A · ${sigla}</title>
+<style>
+  body{font-family:system-ui,-apple-system,sans-serif;padding:36px;max-width:680px;margin:0 auto;color:#1A1A1A;}
+  .term-header{display:flex;align-items:baseline;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:2px solid #1565C0;flex-wrap:wrap;}
+  .term-sigla{font-size:1.4rem;font-weight:900;color:#1565C0;}
+  .term-esteso{font-size:0.9rem;color:#6B7280;font-weight:600;}
+  .term-section-label{font-size:0.65rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#6B7280;margin:12px 0 4px;}
+  .term-text{font-size:0.88rem;line-height:1.6;}
+  .term-link{color:#1565C0;}
+  .frasi-list{list-style:none;padding:0;display:flex;flex-direction:column;gap:5px;margin-top:4px;}
+  .frasi-list li{font-size:0.85rem;line-height:1.6;padding:7px 11px;background:#F0F2F5;border-radius:7px;border-left:3px solid #FF5200;}
+  .frasi-list li.neutrale{border-left-color:#1565C0;}
+  .frase-tag{font-size:0.62rem;font-weight:800;text-transform:uppercase;opacity:0.5;margin-right:5px;}
+  .scrittura-row{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:4px;font-size:0.85rem;}
+  .scrittura-sbagliato{color:#DC2626;text-decoration:line-through;font-weight:600;}
+  .scrittura-ok{color:#16A34A;font-weight:700;}
+  .scrittura-sep{color:#6B7280;font-size:0.78rem;}
+  .eaa-badge{display:inline-flex;font-size:0.68rem;font-weight:800;text-transform:uppercase;background:#FF5200;color:#1A1A1A;padding:3px 10px;border-radius:12px;margin-top:12px;margin-bottom:4px;}
+  .correlati-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+  .correlato,.correlato-pending{font-size:0.8rem;padding:4px 12px;background:#EBF2FB;border-radius:16px;color:#1565C0;font-weight:600;border:1px solid rgba(21,101,192,0.3);text-decoration:none;}
+  .correlato-pending{background:#F0F2F5;color:#6B7280;border-style:dashed;}
+  .connessioni-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px;}
+  .conn-item{background:#F0F2F5;border-radius:8px;padding:8px 10px;}
+  .conn-label{display:block;font-size:0.62rem;font-weight:800;text-transform:uppercase;color:#FF5200;margin-bottom:2px;}
+  .conn-val{font-size:0.82rem;line-height:1.4;}
+  .print-footer{margin-top:32px;padding-top:12px;border-top:1px solid #E5E7EB;font-size:0.72rem;color:#6B7280;display:flex;justify-content:space-between;}
+</style></head><body>
+${clone.outerHTML}
+<div class="print-footer"><span>AccessibilityToAll SRL · WCAG 2.1 AA · Dizionario</span><span>${dataStr}</span></div>
+<script>window.onload=()=>setTimeout(()=>window.print(),200);<\/script>
+</body></html>`);
+    win.document.close();
+  }
+</script>
+
+<!-- ═══ MODAL AGGIUNGI TERMINE ═══ -->
+<div id="add-term-overlay" role="dialog" aria-modal="true" aria-label="Aggiungi nuovo termine" onclick="if(event.target===this)closeAddTerm()">
+  <div class="add-term-modal">
+    <div class="modal-title">+ Aggiungi termine personale</div>
+    <div class="modal-field">
+      <label class="modal-label" for="at-sigla">Sigla / Nome <span style="color:#DC2626;">*</span></label>
+      <input type="text" id="at-sigla" class="modal-input" placeholder="Es: SEO, UX, CTA…" maxlength="40">
+    </div>
+    <div class="modal-field">
+      <label class="modal-label" for="at-esteso">Forma estesa (opzionale)</label>
+      <input type="text" id="at-esteso" class="modal-input" placeholder="Es: Search Engine Optimization">
+    </div>
+    <div class="modal-field">
+      <label class="modal-label" for="at-significato">Significato <span style="color:#DC2626;">*</span></label>
+      <textarea id="at-significato" class="modal-input modal-textarea" placeholder="Cosa significa questo termine?"></textarea>
+    </div>
+    <div class="modal-field">
+      <label class="modal-label" for="at-spiegazione">Spiegazione semplice (opzionale)</label>
+      <textarea id="at-spiegazione" class="modal-input modal-textarea" placeholder="Spiega come se lo descrivessi a una persona non tecnica…"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-secondary" onclick="closeAddTerm()">Annulla</button>
+      <button class="modal-btn-primary" onclick="saveAddTerm()">💾 Salva termine</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FLASHCARD OVERLAY ═══ -->
+<div id="fc-overlay" role="dialog" aria-modal="true" aria-label="Modalità flashcard">
+  <div class="fc-header">
+    <span id="fc-counter" style="color:white;font-weight:700;font-size:.88rem;flex:1;"></span>
+    <button onclick="exitFlashcard()" style="background:rgba(255,255,255,.2);border:none;color:white;padding:7px 14px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:.82rem;font-weight:700;">✕ Esci</button>
+  </div>
+  <div class="fc-letters" id="fc-letters" aria-label="Filtra per lettera"></div>
+  <div class="fc-card" id="fc-card" onclick="fcReveal()" role="button" aria-label="Clicca per rivelare la risposta">
+    <div id="fc-front">
+      <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--grigio-testo);margin-bottom:18px;">Cosa significa?</div>
+      <div id="fc-sigla" style="font-size:2.4rem;font-weight:900;color:var(--blu);line-height:1.1;"></div>
+      <div id="fc-esteso" style="font-size:.88rem;color:var(--grigio-testo);margin-top:8px;"></div>
+      <div style="margin-top:28px;font-size:.75rem;color:var(--grigio-testo);opacity:.55;">▼ Tocca la card per rivelare</div>
+    </div>
+    <div id="fc-back" style="display:none;">
+      <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--arancione);margin-bottom:8px;">Significato</div>
+      <div id="fc-significato" style="font-size:.9rem;line-height:1.6;margin-bottom:18px;"></div>
+      <div style="font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--blu);margin-bottom:8px;">Spiegazione semplice</div>
+      <div id="fc-spiegazione" style="font-size:.85rem;line-height:1.6;color:var(--grigio-testo);"></div>
+    </div>
+  </div>
+  <div class="fc-nav">
+    <button class="fc-btn" onclick="fcNav(-1)" aria-label="Carta precedente">← Prec.</button>
+    <button class="fc-btn fc-reveal-btn" id="fc-reveal-btn" onclick="fcReveal()" aria-label="Rivela risposta">👁 Rivela</button>
+    <button class="fc-btn" onclick="fcNav(1)" aria-label="Carta successiva">Succ. →</button>
+  </div>
+</div>
+
+<a href="../📦 - HUB_ok.html"
+   aria-label="Torna all'HUB"
+   style="position:fixed; bottom:22px; left:22px; z-index:9999;
+          display:inline-flex; align-items:center; gap:7px;
+          padding:9px 18px; background:#1565C0; color:#1A1A1A;
+          font-size:0.82rem; font-weight:800; border-radius:24px;
+          text-decoration:none; border:2px solid rgba(0,0,0,0.18);
+          box-shadow:0 4px 16px rgba(0,0,0,0.18);
+          font-family:system-ui,-apple-system,sans-serif;">
+  ← HUB
+</a>
+
+</body>
+</html>
